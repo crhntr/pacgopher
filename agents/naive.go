@@ -1,11 +1,11 @@
-package agent
+package agents
 
-import "github.com/crhntr/comp469/pacman"
+import "github.com/crhntr/pacmound"
 
 type Naive struct {
 	dead  bool
-	score pacman.ScoreGetter
-	scope pacman.ScopeGetter
+	score pacmound.ScoreGetter
+	scope pacmound.ScopeGetter
 
 	searchDistance, unchangedScoreCount int
 	previousScore                       float64
@@ -13,18 +13,19 @@ type Naive struct {
 	warning error
 }
 
-func (p *Naive) Kill()                               { p.dead = true }
-func (p *Naive) SetScoreGetter(f pacman.ScoreGetter) { p.score = f }
-func (p *Naive) SetScopeGetter(f pacman.ScopeGetter) { p.scope = f }
-func (p *Naive) Warning(err error)                   { p.warning = err }
+func (p *Naive) Kill()                                 { p.dead = true }
+func (p *Naive) SetScoreGetter(f pacmound.ScoreGetter) { p.score = f }
+func (p *Naive) SetScopeGetter(f pacmound.ScopeGetter) { p.scope = f }
+func (p *Naive) Warning(err error)                     { p.warning = err }
 
-func (p *Naive) CalculateIntent() pacman.Direction {
+func (p *Naive) CalculateIntent() pacmound.Direction {
 	if p.dead {
-		return pacman.DirectionNone
+		return pacmound.DirectionNone
 	}
 	// time.Sleep(time.Second / 10)
 
 	d, maxReward := 0, 0.0
+
 	for i, dir := range directions {
 		x, y := dir.Transform()
 

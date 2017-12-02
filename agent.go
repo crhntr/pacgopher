@@ -1,4 +1,4 @@
-package pacman
+package pacmound
 
 // AgentType represents how the game should handle an agent
 // negative agents are ghosts

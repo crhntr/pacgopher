@@ -1,4 +1,4 @@
-package pacman
+package pacmound
 
 import (
 	"net/http"

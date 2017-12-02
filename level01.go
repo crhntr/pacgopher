@@ -1,4 +1,4 @@
-package pacman
+package pacmound
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func Level01(agent Agent) {
+func Level01(agent Agent, ghosts ...Agent) {
 	loopCount, maxLoops := 0.0, 8.0*8.0
 
 	level01(agent, func(m *Maze, agentData *AgentData) bool {
@@ -41,23 +41,23 @@ func level01(player Agent, loop func(m *Maze, agentData *AgentData) bool) {
 	player.SetScopeGetter(newScopeGetter(maze, agentData))
 	player.SetScoreGetter(agentData.Score)
 
-	{
-		ghost := &Ghost{}
-		ghostData, _ := maze.setAgent(7, 7, ghost)
-		ghostData.t = -1
-		ghostData.score = 100
-		ghost.SetScopeGetter(newScopeGetter(maze, ghostData))
-		ghost.SetScoreGetter(ghostData.Score)
-	}
-
-	{
-		ghost := &Ghost{}
-		ghostData, _ := maze.setAgent(2, 7, ghost)
-		ghostData.t = -1
-		ghostData.score = 100
-		ghost.SetScopeGetter(newScopeGetter(maze, ghostData))
-		ghost.SetScoreGetter(ghostData.Score)
-	}
+	// {
+	// 	ghost := &Ghost{}
+	// 	ghostData, _ := maze.setAgent(7, 7, ghost)
+	// 	ghostData.t = -1
+	// 	ghostData.score = 100
+	// 	ghost.SetScopeGetter(newScopeGetter(maze, ghostData))
+	// 	ghost.SetScoreGetter(ghostData.Score)
+	// }
+	//
+	// {
+	// 	ghost := &Ghost{}
+	// 	ghostData, _ := maze.setAgent(2, 7, ghost)
+	// 	ghostData.t = -1
+	// 	ghostData.score = 100
+	// 	ghost.SetScopeGetter(newScopeGetter(maze, ghostData))
+	// 	ghost.SetScoreGetter(ghostData.Score)
+	// }
 
 	for loop(&maze, agentData) {
 	}
