@@ -9,7 +9,9 @@ func NewGameMux(gopher Agent, python1, python2, python3 Agent) http.Handler {
 	serveFile(mux, "/", "../../src/index.html", "")
 	serveFile(mux, "/src/gopher.png", "../../src/gopher.png", "")
 	serveFile(mux, "/src/python.png", "../../src/python.png", "")
-	serveFile(mux, "/src/dirt.jpeg", "../../src/dirt.jpeg", "")
+	serveFile(mux, "/src/dirt.png", "../../src/dirt.png", "")
+	serveFile(mux, "/src/stone.png", "../../src/stone.png", "")
+	serveFile(mux, "/src/carrot.png", "../../src/carrot.png", "")
 
 	mux.HandleFunc("/api/level/00", Level00Handler(gopher))
 	mux.HandleFunc("/api/level/01", Level01Handler(gopher, python1))
