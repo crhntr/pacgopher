@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Question 2</title>
+  <!-- <script src="/src/vue.js"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.9/vue.min.js"></script>
+</head>
+<body>
+  <div id="app">
+      <div v-if="states.length > 0">
+        <button @click="step--">Previous Step</button>
+        <button @click="step++">Next Step</button>
+        <button @click="play()">Play</button>
+        <button @click="stopPlaying()">Stop</button>
+
+        <div v-for="row in states[step]" class="row">
+          <div v-for="t in row" v-bind:class="{'pacman': t.agent > 0, 'obsticle': t.obsticle && !t.pacman, 'tile': true, ghost: t.agent < 0, reward: t.reward > 0 && t.agent == 0}">
+          </div>
+        </div>
+        <table>
+          <tr><td>Step</td><td>{{step}}</td></tr>
+          <tr><td>Score</td><td>{{scores[step]}}</td></tr>
+        </table>
+      </div>
+      <button v-else @click="createGame()">NewGame</button>
+  </div>
+</body>
+<script>
+var app = new Vue({
+  el: '#app',
+  data() {
+    return {
+      states: [],
+      step: 0,
+      scores: [],
+      stepper: null
+    }
+  },
+  methods: {
+    createGame: function () {
+      const req = new XMLHttpRequest()
+      const that = this
+      req.onreadystatechange = function () {
+        if (this.readyState == 4) {
+          if (this.status >= 200 && this.status < 300) {
+            var data = JSON.parse(req.responseText)
+            console.log(data)
+            that.scores = data.scores
+            that.states = data.states
+            that.step = 0
+          }
+        }
+      }
+      req.open("POST", "/api/level/00", true);
+      req.send();
+    },
+    play: function () {
+      if (this.stepper == null) {
+        var that = this
+        this.stepper = setInterval( function () {
+          that.step = (that.step+1)%that.states.length
+        }, 100)
+      }
+    },
+    stopPlaying: function () {
+      clearInterval(this.stepper)
+      this.stepper = null
+    },
+  }
+})
+</script>
+<style>
+  body, html {background: black; color: white}
+  #app{margin: 10vh auto; width: 256px; height: 256px}
+  .tile {width: 12px; height: 12px; margin: 2px; padding: 0px; float: left}
+  .obsticle { background: white; width: 10px; height: 10px; margin: 3px}
+  .row {height: 16px; width: 100vw}
+  .ghost {border-top-left-radius: 6px; border-top-right-radius: 6px; background: HSL(24, 78%, 62%)}
+  .pacman {width: 12px; height: 12px; border-radius: 6px; margin: 2px;  background: HSL(40, 90%, 69%)}
+  .reward {border-radius: 3px; width: 6px; height: 6px; margin: 5px; background: HSL(173, 38%, 68%)}
+</style>
+</html>
