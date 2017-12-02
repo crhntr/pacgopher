@@ -11,9 +11,9 @@ func (m *Maze) loop() bool {
 			if agent := m.Occupant(x, y); agent != nil {
 				agentIntent := agent.a.CalculateIntent()
 				xIntent, yIntent := move(m, agentIntent, agent.x, agent.y)
-				if m.IsObsticle(xIntent, yIntent) {
+				hitObsticle := m.IsObsticle(xIntent, yIntent)
+				if hitObsticle {
 					agent.score -= ObsticleCollisionCost
-					continue
 				}
 
 				if otherAgent := m.Occupant(xIntent, yIntent); otherAgent != nil {
@@ -28,22 +28,29 @@ func (m *Maze) loop() bool {
 				if err != nil {
 					agent.a.Warning(err)
 				}
+				agent.score += points
 
 				defer func(x, y int) {
-					agent.x = xIntent
-					agent.y = yIntent
-					(*m)[xIntent][yIntent].agent = (*m)[x][y].agent
-					(*m)[x][y].agent = nil
-				}(x, y)
-
-				if agent.t > 0 {
-					if agent.score < 0 {
-						return false
+					if !hitObsticle {
+						agent.x = xIntent
+						agent.y = yIntent
+						(*m)[xIntent][yIntent].agent = (*m)[x][y].agent
+						(*m)[x][y].agent = nil
 					}
-					agent.score += points
-					(*m)[x][y].reward = 0
+				}(x, y)
+			}
+		}
 
-					agent.score -= LivingCost
+		for x := range *m {
+			for y := range (*m)[x] {
+				if agent := (*m)[x][y].agent; agent != nil {
+					if agent.t > 0 {
+						(*m)[x][y].reward = 0
+						agent.score -= LivingCost
+						if agent.dead {
+							return false
+						}
+					}
 				}
 			}
 		}

@@ -3,7 +3,7 @@ package agents
 import "github.com/crhntr/pacmound"
 
 type Naive struct {
-	dead  bool
+	// dead  bool
 	score pacmound.ScoreGetter
 	scope pacmound.ScopeGetter
 
@@ -13,15 +13,11 @@ type Naive struct {
 	warning error
 }
 
-func (p *Naive) Kill()                                 { p.dead = true }
 func (p *Naive) SetScoreGetter(f pacmound.ScoreGetter) { p.score = f }
 func (p *Naive) SetScopeGetter(f pacmound.ScopeGetter) { p.scope = f }
 func (p *Naive) Warning(err error)                     { p.warning = err }
 
 func (p *Naive) CalculateIntent() pacmound.Direction {
-	if p.dead {
-		return pacmound.DirectionNone
-	}
 	// time.Sleep(time.Second / 10)
 
 	d, maxReward := 0, 0.0
@@ -54,3 +50,5 @@ func (p *Naive) CalculateIntent() pacmound.Direction {
 	}
 	return directions[d]
 }
+
+// func (p *Naive) Kill()                                 { p.dead = true }

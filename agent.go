@@ -7,7 +7,6 @@ package pacmound
 type AgentType int
 
 type Agent interface {
-	Kill()
 	Warning(err error)
 	CalculateIntent() Direction // player decision loop
 
@@ -32,7 +31,6 @@ func (ad *AgentData) Score() float64 {
 
 func (ad *AgentData) RecordKill() {
 	ad.dead = true
-	ad.a.Kill()
 }
 
 func newScopeGetter(maze Maze, ad *AgentData) ScopeGetter {

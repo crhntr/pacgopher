@@ -21,4 +21,5 @@ func (p *Ghost) Warning(err error)                     { log.Printf("GHOST: %s",
 func (p *Ghost) CalculateIntent() pacmound.Direction {
 	return directions[rand.Intn(len(directions))]
 }
-func (p *Ghost) Kill() { /* What is Dead May Never Die*/ }
+
+// func (p *Ghost) Kill() { /* What is Dead May Never Die*/ }
