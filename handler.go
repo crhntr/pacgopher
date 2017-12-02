@@ -4,21 +4,23 @@ import (
 	"net/http"
 )
 
-type GameServer struct {
-	mux http.Handler
+func NewGameMux(gopher Agent, python1, python2, python3 Agent) http.Handler {
+	mux := http.NewServeMux()
+	serveFile(mux, "/", "../../src/index.html", "")
+	serveFile(mux, "/src/gopher.png", "../../src/gopher.png", "")
+	serveFile(mux, "/src/python.png", "../../src/python.png", "")
+	serveFile(mux, "/src/dirt.jpeg", "../../src/dirt.jpeg", "")
+
+	mux.HandleFunc("/api/level/00", Level00Handler(gopher))
+	mux.HandleFunc("/api/level/01", Level01Handler(gopher, python1))
+	return mux
 }
 
-func NewGameMux(agent Agent) http.Handler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "../pacman/src/index.html")
+func serveFile(mux *http.ServeMux, url, path, contentType string) {
+	mux.HandleFunc(url, func(w http.ResponseWriter, r *http.Request) {
+		if contentType != "" {
+			w.Header().Set("Content-Type", contentType)
+		}
+		http.ServeFile(w, r, path)
 	})
-	mux.HandleFunc("/src/vue.js", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/javascript")
-		http.ServeFile(w, r, "../pacman/src/vue.js")
-	})
-	mux.HandleFunc("/api/level/00", Level00Handler(agent))
-	mux.HandleFunc("/api/level/01", Level01Handler(agent))
-
-	return mux
 }

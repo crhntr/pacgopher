@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	p := agents.Naive{}
-	mux := pacmound.NewGameMux(&p)
+	gopher := agents.Naive{}
+	python1, python2, python3 := agents.Ghost{}, agents.Ghost{}, agents.Ghost{}
+	mux := pacmound.NewGameMux(&gopher, &python1, &python2, &python3)
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }

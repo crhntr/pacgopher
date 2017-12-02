@@ -6,10 +6,10 @@ import (
 	"strconv"
 )
 
-func Level01(agent Agent, ghosts ...Agent) {
+func Level01(gopher, python Agent) {
 	loopCount, maxLoops := 0.0, 8.0*8.0
 
-	level01(agent, func(m *Maze, agentData *AgentData) bool {
+	level01(gopher, python, func(m *Maze, agentData *AgentData) bool {
 		if !m.loop() || agentData.score >= (63-(loopCount*LivingCost))-0.001 || loopCount > maxLoops {
 			return false
 		}
@@ -18,7 +18,7 @@ func Level01(agent Agent, ghosts ...Agent) {
 	})
 }
 
-func level01(player Agent, loop func(m *Maze, agentData *AgentData) bool) {
+func level01(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool) {
 	const size = 10
 	maze := NewEmptyMaze(size, size)
 	for i := 0; i < size; i++ {
@@ -35,35 +35,23 @@ func level01(player Agent, loop func(m *Maze, agentData *AgentData) bool) {
 	}
 	maze[2][2].reward = 0
 
-	agentData, err := maze.setAgent(2, 2, player)
+	gopherData, err := maze.setAgent(2, 2, gopher)
 	must(err)
-	agentData.t = 1
-	player.SetScopeGetter(newScopeGetter(maze, agentData))
-	player.SetScoreGetter(agentData.Score)
+	gopherData.t = 1
+	gopher.SetScopeGetter(newScopeGetter(maze, gopherData))
+	gopher.SetScoreGetter(gopherData.Score)
 
-	// {
-	// 	ghost := &Ghost{}
-	// 	ghostData, _ := maze.setAgent(7, 7, ghost)
-	// 	ghostData.t = -1
-	// 	ghostData.score = 100
-	// 	ghost.SetScopeGetter(newScopeGetter(maze, ghostData))
-	// 	ghost.SetScoreGetter(ghostData.Score)
-	// }
-	//
-	// {
-	// 	ghost := &Ghost{}
-	// 	ghostData, _ := maze.setAgent(2, 7, ghost)
-	// 	ghostData.t = -1
-	// 	ghostData.score = 100
-	// 	ghost.SetScopeGetter(newScopeGetter(maze, ghostData))
-	// 	ghost.SetScoreGetter(ghostData.Score)
-	// }
+	pythonData, err := maze.setAgent(7, 7, python)
+	must(err)
+	pythonData.t = -1
+	python.SetScopeGetter(newScopeGetter(maze, pythonData))
+	python.SetScoreGetter(pythonData.Score)
 
-	for loop(&maze, agentData) {
+	for loop(&maze, gopherData) {
 	}
 }
 
-func Level01Handler(agent Agent) http.HandlerFunc {
+func Level01Handler(gopher, python Agent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		maxLoops := 120
 		loopLimit, err := strconv.Atoi(r.URL.Query().Get("limit"))
@@ -79,7 +67,7 @@ func Level01Handler(agent Agent) http.HandlerFunc {
 		}{}
 		data.MaxSteps = loopLimit
 
-		level01(agent, func(m *Maze, agentData *AgentData) bool {
+		level01(gopher, python, func(m *Maze, agentData *AgentData) bool {
 			data.States = append(data.States, m.encodable())
 			data.Scores = append(data.Scores, agentData.score)
 
