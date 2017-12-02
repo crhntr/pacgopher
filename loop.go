@@ -1,9 +1,5 @@
 package pacmound
 
-import (
-	"math"
-)
-
 func (m *Maze) loop() bool {
 	for x := range *m {
 		for y := range (*m)[x] {
@@ -17,18 +13,16 @@ func (m *Maze) loop() bool {
 				}
 
 				if otherAgent := m.Occupant(xIntent, yIntent); otherAgent != nil {
-					if math.Abs(otherAgent.score) > math.Abs(agent.score) {
-						agent.RecordKill()
-					} else {
-						otherAgent.RecordKill()
-					}
+					fight(agent, otherAgent)
 				}
 
-				points, err := m.RewardAt(x, y)
-				if err != nil {
-					agent.a.Warning(err)
+				if agent.t > 0 {
+					defer func(x, y int) {
+						agent.score += (*m)[x][y].reward
+						(*m)[x][y].reward = 0
+					}(x, y)
+					agent.score -= LivingCost
 				}
-				agent.score += points
 
 				defer func(x, y int) {
 					if !hitObsticle {
@@ -45,8 +39,6 @@ func (m *Maze) loop() bool {
 			for y := range (*m)[x] {
 				if agent := (*m)[x][y].agent; agent != nil {
 					if agent.t > 0 {
-						(*m)[x][y].reward = 0
-						agent.score -= LivingCost
 						if agent.dead {
 							return false
 						}

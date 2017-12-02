@@ -1,8 +1,8 @@
 package pacmound
 
 // AgentType represents how the game should handle an agent
-// negative agents are ghosts
-// positive agents are players
+// negative agents are pythons
+// positive agents are gophers
 // zero value is not an angent (empty)
 type AgentType int
 
@@ -23,6 +23,14 @@ type AgentData struct {
 	x, y  int
 	t     AgentType
 	dead  bool
+}
+
+func (ad *AgentData) IsPython() bool {
+	return ad.t < 0
+}
+
+func (ad *AgentData) IsGopher() bool {
+	return ad.t > 0
 }
 
 func (ad *AgentData) Score() float64 {
@@ -62,4 +70,20 @@ func (maze *Maze) setAgent(x, y int, agent Agent) (*AgentData, error) {
 		score: 0,
 	}
 	return (*maze)[x][y].agent, nil
+}
+
+func fight(agent1, agent2 *AgentData) {
+	if agent1.dead || agent2.dead {
+		return
+	}
+	if agent1.IsGopher() && agent2.IsPython() {
+		agent1.dead = true
+		agent1.score += agent2.score
+		agent2.score -= agent1.score
+	}
+	if agent2.IsGopher() && agent1.IsPython() {
+		agent2.dead = true
+		agent2.score += agent1.score
+		agent1.score -= agent2.score
+	}
 }
