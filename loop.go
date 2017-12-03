@@ -1,6 +1,7 @@
 package pacmound
 
 func (m *Maze) loop() bool {
+	gopherDied := false
 	for x := range *m {
 		for y := range (*m)[x] {
 
@@ -14,6 +15,9 @@ func (m *Maze) loop() bool {
 
 				if otherAgent := m.Occupant(xIntent, yIntent); otherAgent != nil {
 					fight(agent, otherAgent)
+					if agent.IsGopher() && agent.dead || otherAgent.IsGopher() && otherAgent.dead {
+						return false
+					}
 				}
 
 				if agent.t > 0 {
@@ -24,26 +28,14 @@ func (m *Maze) loop() bool {
 					agent.score -= LivingCost
 				}
 
-				defer func(x, y int) {
-					if !hitObsticle {
+				defer func(x, y int, hitObsticle bool) {
+					if !hitObsticle && !gopherDied {
 						agent.x = xIntent
 						agent.y = yIntent
 						(*m)[xIntent][yIntent].agent = (*m)[x][y].agent
 						(*m)[x][y].agent = nil
 					}
-				}(x, y)
-			}
-		}
-
-		for x := range *m {
-			for y := range (*m)[x] {
-				if agent := (*m)[x][y].agent; agent != nil {
-					if agent.t > 0 {
-						if agent.dead {
-							return false
-						}
-					}
-				}
+				}(x, y, hitObsticle)
 			}
 		}
 	}
