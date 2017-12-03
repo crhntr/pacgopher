@@ -1,7 +1,6 @@
 package agents
 
 import (
-	"fmt"
 	"math/rand"
 
 	"github.com/crhntr/pacmound"
@@ -45,7 +44,6 @@ func (p *Naive) CalculateIntent() pacmound.Direction {
 		rewards[i] = dirReward
 	}
 	_, directions = removeMinimumScoringDirections(rewards, directions)
-	fmt.Println(directions)
 	return directions[rand.Intn(len(directions))]
 }
 
