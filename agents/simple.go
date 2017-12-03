@@ -6,7 +6,7 @@ import (
 	"github.com/crhntr/pacmound"
 )
 
-type Naive struct {
+type Simple struct {
 	// dead  bool
 	score pacmound.ScoreGetter
 	scope pacmound.ScopeGetter
@@ -14,11 +14,11 @@ type Naive struct {
 	warning error
 }
 
-func (p *Naive) SetScoreGetter(f pacmound.ScoreGetter) { p.score = f }
-func (p *Naive) SetScopeGetter(f pacmound.ScopeGetter) { p.scope = f }
-func (p *Naive) Warning(err error)                     { p.warning = err }
+func (p *Simple) SetScoreGetter(f pacmound.ScoreGetter) { p.score = f }
+func (p *Simple) SetScopeGetter(f pacmound.ScopeGetter) { p.scope = f }
+func (p *Simple) Warning(err error)                     { p.warning = err }
 
-func (p *Naive) CalculateIntent() pacmound.Direction {
+func (p *Simple) CalculateIntent() pacmound.Direction {
 	// time.Sleep(time.Second / 10)
 
 	directions := directionsSlice()
@@ -47,4 +47,4 @@ func (p *Naive) CalculateIntent() pacmound.Direction {
 	return directions[rand.Intn(len(directions))]
 }
 
-// func (p *Naive) Kill()                                 { p.dead = true }
+// func (p *Simple) Kill()                                 { p.dead = true }

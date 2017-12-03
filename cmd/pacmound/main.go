@@ -9,7 +9,7 @@ import (
 )
 
 func getGopher() pacmound.Agent {
-	return &agents.Naive{}
+	return &agents.Simple{}
 }
 
 func getPython() pacmound.Agent {
