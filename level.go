@@ -1,5 +1,9 @@
 package pacmound
 
+const (
+	standardReward = 5
+)
+
 func Level00(getGopher, getPython AgentGetter) { runLevel(level00, getGopher, getPython, 1000) }
 func Level01(getGopher, getPython AgentGetter) { runLevel(level01, getGopher, getPython, 1000) }
 func Level02(getGopher, getPython AgentGetter) { runLevel(level02, getGopher, getPython, 1000) }

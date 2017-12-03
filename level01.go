@@ -12,10 +12,9 @@ func level01(getGopher, getPython AgentGetter, loop func(m *Maze, agentData *Age
 
 	for x := 1; x < size-1; x++ {
 		for y := 1; y < size-1; y++ {
-			maze[x][y].reward = 1
+			maze[x][y].reward = standardReward
 		}
 	}
-	maze[2][2].reward = 0
 
 	gopher := getGopher()
 	gopherData, err := maze.setAgent(2, 2, gopher)

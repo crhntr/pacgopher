@@ -40,7 +40,6 @@ func level04(getGopher, getPython AgentGetter, loop func(m *Maze, agentData *Age
 		}
 	}
 
-	maze[2][2].reward = 0
 	maze[2][2].obsticle = false
 	gopher := getGopher()
 	gopherData, err := maze.setAgent(2, 2, gopher)

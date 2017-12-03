@@ -24,12 +24,11 @@ func level02(getGopher, getPython AgentGetter, loop func(m *Maze, agentData *Age
 			if (y+2)%2 == 0 && (x+2)%2 == 0 {
 				maze.setObsticle(x, y)
 			} else {
-				maze.setReward(x, y, 1)
+				maze.setReward(x, y, standardReward)
 			}
 		}
 	}
 
-	maze[1][1].reward = 0
 	maze[1][1].obsticle = false
 	gopher := getGopher()
 	gopherData, err := maze.setAgent(1, 1, gopher)
