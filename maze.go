@@ -62,6 +62,12 @@ func (maze *Maze) setReward(x, y int, reward float64) error {
 	return nil
 }
 
+func (maze *Maze) getReward(x, y int) float64 {
+	reward := (*maze)[x][y].reward
+	(*maze)[x][y].reward = 0
+	return reward
+}
+
 // RewardAt may returns an error for out of range or obsticles
 func (maze Maze) RewardAt(x, y int) (float64, error) {
 	if x < 0 || y < 0 || x >= len(maze) || y >= len(maze[x]) {
