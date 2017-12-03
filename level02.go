@@ -37,15 +37,10 @@ func level02(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool
 		maze.setObsticle(size-1, i)
 	}
 
-	maze.setObsticle(5, 5)
-	maze.setObsticle(5, 6)
 	maze.setObsticle(5, 7)
 	maze.setObsticle(5, 8)
 	maze.setObsticle(5, 9)
 
-	maze.setObsticle(5, 5)
-	maze.setObsticle(5, 6)
-	maze.setObsticle(6, 5)
 	maze.setObsticle(6, 6)
 	maze.setObsticle(7, 5)
 	maze.setObsticle(7, 6)
@@ -69,11 +64,15 @@ func level02(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool
 	maze.setObsticle(3, 4)
 
 	maze.setObsticle(4, 6)
-	maze.setObsticle(4, 5)
+	// maze.setObsticle(4, 5)
 	maze.setObsticle(4, 4)
 	maze.setObsticle(4, 3)
 	maze.setObsticle(4, 2)
 	maze.setObsticle(4, 1)
+
+	maze.setObsticle(9, 2)
+	maze.setObsticle(9, 3)
+	maze.setObsticle(9, 4)
 
 	maze[2][2].reward = 0
 
