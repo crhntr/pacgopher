@@ -8,8 +8,8 @@
   <div id="app">
     <div v-if="states.length > 0">
       <button @click="endGame()">EndGame</button>
-      <button @click="step--">Previous Step</button>
-      <button @click="step++">Next Step</button>
+      <button @click="step > 0 ? step-- : step">Previous Step</button>
+      <button @click="step < states.length ? step++ : step">Next Step</button>
       <button @click="play()">Play</button>
       <button @click="stopPlaying()">Stop</button>
 
