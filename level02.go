@@ -7,7 +7,7 @@ import (
 )
 
 func Level02(gopher, python1, python2 Agent) {
-	loopCount, maxLoops := 0.0, 8.0*8.0
+	loopCount, maxLoops := 0.0, 2000.0
 
 	level02(gopher, python1, python2, func(m *Maze, agentData *AgentData) bool {
 		if !m.loop() || agentData.score >= (63-(loopCount*LivingCost))-0.001 || loopCount > maxLoops {
@@ -68,34 +68,37 @@ func level02(gopher, python1, python2 Agent, loop func(m *Maze, agentData *Agent
 
 func Level02Handler(getGopher, getPython AgentGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		maxLoops := 500
+		training := r.URL.Query().Get("train") == trueStr
+
+		maxLoops := MaxLoops
 		loopLimit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 		if err != nil || loopLimit > maxLoops {
 			loopLimit = maxLoops
 		}
 		loopCount := 0
 
-		data := struct {
-			MaxSteps int                `json:"maxSteps"`
-			Scores   []float64          `json:"scores"`
-			States   [][][]EncodedBlock `json:"states"`
-		}{}
+		data := LevelData{}
 		data.MaxSteps = loopLimit
 
 		gopher := getGopher()
 		level02(gopher, getPython(), getPython(), func(m *Maze, agentData *AgentData) bool {
-			data.States = append(data.States, m.encodable())
-			data.Scores = append(data.Scores, agentData.score)
+			if !training {
+				data.States = append(data.States, m.encodable())
+				data.Scores = append(data.Scores, agentData.score)
+			}
 
 			remReward := m.RemainingReward()
 
-			if !m.loop() || remReward <= 0 || loopCount > loopLimit || agentData.dead {
+			if !m.loop() || remReward <= 0 || (!training && loopCount > loopLimit) || agentData.dead {
+				data.Scores = append(data.Scores, agentData.score)
+				gopher.CalculateIntent()
 				return false
 			}
 			loopCount++
 			return true
 		})
 
+		data.Agent = gopher
 		json.NewEncoder(w).Encode(data)
 	}
 }

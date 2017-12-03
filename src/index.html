@@ -33,12 +33,17 @@
     <div v-else>
       <table class="control">
         <tr>
-          <td colspan="2">
+          <td>
             <button @click="createGame('00')">Level 00</button>
             <button @click="createGame('01')">Level 01</button>
             <button @click="createGame('02')">Level 02</button>
             <button @click="createGame('03')">Level 03</button>
             <button @click="createGame('04')">Level 04</button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button @click="training = !training">{{training ? "Stop Trainng": "Start Trainng"}}</button>
           </td>
         </tr>
       </table>
@@ -53,6 +58,7 @@ var app = new Vue({
       states: [],
       step: 0,
       scores: [],
+      training: false,
       stepper: null
     }
   },

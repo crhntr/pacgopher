@@ -4,6 +4,14 @@ import (
 	"net/http"
 )
 
+var (
+	trueStr = "true"
+)
+
+const (
+	MaxLoops = 300
+)
+
 func NewGameMux(getGopher, getPython AgentGetter) http.Handler {
 	mux := http.NewServeMux()
 	serveFile(mux, "/", "../../src/index.html", "")
@@ -19,6 +27,13 @@ func NewGameMux(getGopher, getPython AgentGetter) http.Handler {
 	mux.HandleFunc("/api/level/03", Level03Handler(getGopher, getPython))
 	mux.HandleFunc("/api/level/04", Level04Handler(getGopher, getPython))
 	return mux
+}
+
+type LevelData struct {
+	MaxSteps int                `json:"maxSteps"`
+	Scores   []float64          `json:"scores"`
+	States   [][][]EncodedBlock `json:"states"`
+	Agent    Agent              `json:"agent,omitempty"`
 }
 
 func serveFile(mux *http.ServeMux, url, path, contentType string) {
