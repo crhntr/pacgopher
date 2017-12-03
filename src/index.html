@@ -6,22 +6,27 @@
 </head>
 <body>
   <div id="app">
-      <div v-if="states.length > 0">
-        <button @click="step--">Previous Step</button>
-        <button @click="step++">Next Step</button>
-        <button @click="play()">Play</button>
-        <button @click="stopPlaying()">Stop</button>
+    <div v-if="states.length > 0">
+      <button @click="endGame()">EndGame</button>
+      <button @click="step--">Previous Step</button>
+      <button @click="step++">Next Step</button>
+      <button @click="play()">Play</button>
+      <button @click="stopPlaying()">Stop</button>
 
-        <div v-for="row in states[step]" class="row">
-          <div v-for="t in row" v-bind:class="{'gopher': t.agent > 0, 'obsticle': t.obsticle && !t.gopher, 'tile': true, python: t.agent < 0, reward: t.reward > 0 && t.agent == 0}">
-          </div>
+      <div v-for="row in states[step]" class="row">
+        <div v-for="t in row" v-bind:class="{'gopher': t.agent > 0, 'obsticle': t.obsticle && !t.gopher, 'tile': true, python: t.agent < 0, reward: t.reward > 0 && t.agent == 0}">
         </div>
-        <table>
-          <tr><td>Step</td><td>{{step}}</td></tr>
-          <tr><td>Score</td><td>{{scores[step]}}</td></tr>
-        </table>
       </div>
-      <button v-else @click="createGame()">NewGame</button>
+      <table>
+        <tr><td>Step</td><td>{{step}}</td></tr>
+        <tr><td>Score</td><td>{{scores[step]}}</td></tr>
+      </table>
+    </div>
+    <div v-else>
+      <button @click="createGame('00')">Level 00</button>
+      <button @click="createGame('01')">Level 01</button>
+      <button @click="createGame('02')">Level 02</button>
+    </div>
   </div>
 </body>
 <script>
@@ -36,7 +41,7 @@ var app = new Vue({
     }
   },
   methods: {
-    createGame: function () {
+    createGame: function (level) {
       const req = new XMLHttpRequest()
       const that = this
       req.onreadystatechange = function () {
@@ -50,8 +55,16 @@ var app = new Vue({
           }
         }
       }
-      req.open("POST", "/api/level/01", true);
+      req.open("POST", `/api/level/${level}`, true);
       req.send();
+    },
+    endGame: function () {
+      if (this.stepper !== null) {
+        this.stopPlaying()
+      }
+      this.states = []
+      this.step = 0
+      this.scores = []
     },
     play: function () {
       if (this.stepper == null) {
@@ -69,16 +82,16 @@ var app = new Vue({
 })
 </script>
 <style>
-body, html {
+body {margin: 0;}
+html {
   /*background: black;*/
   background-image: url("/src/dirt.png");
   background-repeat: repeat;
   color: white;
+  margin: 0;
 }
 #app{
-  margin: 10vh auto;
-  width: 512px;
-  height: 512px;
+  margin: 0;
 }
 .tile {
   width: 40px;

@@ -15,6 +15,7 @@ func NewGameMux(gopher Agent, python1, python2, python3 Agent) http.Handler {
 
 	mux.HandleFunc("/api/level/00", Level00Handler(gopher))
 	mux.HandleFunc("/api/level/01", Level01Handler(gopher, python1))
+	mux.HandleFunc("/api/level/02", Level02Handler(gopher, python1))
 	return mux
 }
 
