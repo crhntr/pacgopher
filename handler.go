@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 )
 
 var (
@@ -46,8 +47,10 @@ func LevelHandler(levelFunc LevelFunc, getGopher, getPython AgentGetter) http.Ha
 
 		data := LevelData{}
 		data.MaxSteps = MaxLoops
-
+		userOut := json.NewEncoder(os.Stdout)
 		levelFunc(getGopher, getPython, func(m *Maze, agentData *AgentData) bool {
+			defer userOut.Encode(agentData.a)
+
 			data.States = append(data.States, m.encodable())
 			data.Scores = append(data.Scores, agentData.score)
 

@@ -7,7 +7,7 @@ import (
 )
 
 type Simple struct {
-	// dead  bool
+	dead  bool
 	score pacmound.ScoreGetter
 	scope pacmound.ScopeGetter
 
@@ -47,4 +47,4 @@ func (p *Simple) CalculateIntent() pacmound.Direction {
 	return directions[rand.Intn(len(directions))]
 }
 
-// func (p *Simple) Kill()                                 { p.dead = true }
+func (p *Simple) Kill() { p.dead = true }

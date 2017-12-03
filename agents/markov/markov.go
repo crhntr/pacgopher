@@ -1,7 +1,6 @@
 package markov
 
 import (
-	"math"
 	"math/rand"
 
 	"github.com/crhntr/pacmound"
@@ -14,77 +13,71 @@ const (
 )
 
 var (
-	infSmall = math.Inf(-1)
+	infSmall = -100000000.0
 )
 
 type Agent struct {
-	DiscountFactor,
-	LearningRate float64
+	DiscountFactor float64 `json:"discountFactor"`
+	LearningRate   float64 `json:"learningRate"`
+
+	CarrotWeight   float64 `json:"carrotWeight"`
+	ObsticleWeight float64 `json:"obsticleWeight"`
+	PythonWeight   float64 `json:"pythonWeight"`
 
 	check  pacmound.ScopeGetter
 	reward pacmound.ScoreGetter
 
 	prevousAction pacmound.Direction
 
-	QTable QTable
+	previousRewardTotal float64
 
-	previousRewardTotal,
-	carrotWeight,
-	obsticalWeight,
-	pythonWeight float64
+	count int
 }
 
 func (agent *Agent) SetScoreGetter(f pacmound.ScoreGetter) { agent.reward = f }
 func (agent *Agent) SetScopeGetter(f pacmound.ScopeGetter) { agent.check = f }
 func (agent *Agent) Warning(err error)                     {}
 func (agent *Agent) CalculateIntent() pacmound.Direction {
-	return agent.QLearning()
-}
-
-func (agent *Agent) QLearning() pacmound.Direction {
-	if agent.carrotWeight == 0 || agent.pythonWeight == 0 {
+	defer func() { agent.count++ }()
+	if agent.count < 10 {
 		return pacmound.Direction(rand.Intn(4) + 1)
 	}
+	return agent.QLearning(agent.LearningRate, agent.DiscountFactor)
+}
+func (agent *Agent) Kill() {
+	agent.QLearning(agent.LearningRate, agent.DiscountFactor)
+}
 
+func (agent *Agent) QLearning(α, γ float64) pacmound.Direction {
 	rewardCurrent := agent.reward() - agent.previousRewardTotal
 	agent.previousRewardTotal = agent.reward()
 
-	x, y := agent.prevousAction.Transform()
-	agent.QTable.update(rewardCurrent, agent.LearningRate, agent.DiscountFactor, x*-1, y*-1, agent.prevousAction)
+	xt, yt := agent.prevousAction.Transform()
 
-	actions := agents.Actions()
-	for xOffset := 0 - (len(agent.QTable) / 2); xOffset < len(agent.QTable); xOffset++ {
-		for yOffset := 0 - (len(agent.QTable[xOffset]) / 2); yOffset < len(agent.QTable[xOffset]); yOffset++ {
-			for _, action := range actions[1:] {
-				xt, yt := action.Transform()
-				block := agent.check(x, y)
-
-				reward := infSmall
-				if block != nil {
-					reward = agent.carrotWeight * agent.calulateCarrotWeight(xOffset*xt, yOffset*yt)
-					reward += agent.pythonWeight * agent.calulatePythonWeight(xOffset*xt, yOffset*yt)
-					reward += agent.obsticalWeight * agent.calulateObsticalWeight(xOffset*xt, yOffset*yt)
-				}
-
-				agent.QTable.update(reward, agent.LearningRate, agent.DiscountFactor, xOffset, yOffset, action)
-			}
+	actions := agents.Actions()[1:]
+	rewards := make([]float64, len(actions))
+	for i, action := range actions[1:] {
+		xtt, ytt := action.Transform()
+		block := agent.check(xtt, ytt)
+		reward := infSmall
+		if block != nil {
+			reward = agent.CarrotWeight * agent.calulateCarrotWeight(xt*xtt, yt*ytt)
+			reward += agent.PythonWeight * agent.calulatePythonWeight(xt*xtt, yt*ytt)
+			reward += agent.ObsticleWeight * agent.calulateObsticleWeight(xt*xtt, yt*ytt)
 		}
+		rewards[i] = reward
 	}
 
-	q := agent.carrotWeight * agent.calulateCarrotWeight(0, 0)
-	q += agent.pythonWeight * agent.calulatePythonWeight(0, 0)
-	q += agent.obsticalWeight * agent.calulateObsticalWeight(0, 0)
+	q := agent.CarrotWeight * agent.calulateCarrotWeight(0, 0)
+	q += agent.PythonWeight * agent.calulatePythonWeight(0, 0)
+	q += agent.ObsticleWeight * agent.calulateObsticleWeight(0, 0)
 
-	agent.carrotWeight = agent.carrotWeight + agent.LearningRate*(rewardCurrent-q)*agent.calulateCarrotWeight(x, y)
-	agent.pythonWeight = agent.pythonWeight + agent.LearningRate*(rewardCurrent-q)*agent.calulatePythonWeight(x, y)
-	agent.obsticalWeight = agent.obsticalWeight + agent.LearningRate*(rewardCurrent-q)*agent.calulateObsticalWeight(x, y)
+	agent.CarrotWeight = agent.CarrotWeight + agent.LearningRate*(rewardCurrent-q)*agent.calulateCarrotWeight(xt, yt)
+	agent.PythonWeight = agent.PythonWeight + agent.LearningRate*(rewardCurrent-q)*agent.calulatePythonWeight(xt, yt)
+	agent.ObsticleWeight = agent.ObsticleWeight + agent.LearningRate*(rewardCurrent-q)*agent.calulateObsticleWeight(xt, yt)
 
-	agent.prevousAction = agent.QTable[0][0].maxDirection()
+	agent.prevousAction = maxDirection(rewards...) + 1
 	return agent.prevousAction
-}
-
-func (q QTable) update(r, α, γ float64, x, y int, action pacmound.Direction) {
-	q.setQ(x, y, action, (1-α)*q.getQ(x, y, action)+α*(r+γ*q[x][y].maxReward()))
 }
 
 func (agent *Agent) calulateCarrotWeight(x, y int) float64 {
@@ -95,9 +88,10 @@ func (agent *Agent) calulateCarrotWeight(x, y int) float64 {
 		xt, yt := action.Transform()
 		for {
 			b := agent.check(x+xt*dist, y+yt*dist)
-			if b == nil || b.IsObstructed() {
+			if b == nil || b.IsObstructed() || dist > 5 {
 				break
 			}
+			dist++
 			reward += b.Reward() / float64(dist*dist)
 		}
 	}
@@ -111,17 +105,18 @@ func (agent *Agent) calulatePythonWeight(x, y int) float64 {
 		xt, yt := action.Transform()
 		for {
 			b := agent.check(x+xt*dist, y+yt*dist)
-			if b == nil || b.IsObstructed() {
+			if b == nil || b.IsObstructed() || dist > 5 {
 				break
 			}
+			dist++
 			if b.IsOccupied() {
-				reward += 1 / float64(dist*dist)
+				reward += 1 / float64(dist)
 			}
 		}
 	}
 	return reward
 }
-func (agent *Agent) calulateObsticalWeight(x, y int) float64 {
+func (agent *Agent) calulateObsticleWeight(x, y int) float64 {
 	reward := 0.0
 	actions := agents.Actions()
 	for _, action := range actions[1:] {
@@ -129,11 +124,32 @@ func (agent *Agent) calulateObsticalWeight(x, y int) float64 {
 		xt, yt := action.Transform()
 		for {
 			b := agent.check(x+xt*dist, y+yt*dist)
-			if b == nil || b.IsObstructed() {
-				reward += 1 / float64(dist*dist)
+			if b == nil || b.IsObstructed() || dist > 5 {
+				reward += 1 / float64(dist)
 				break
 			}
+			dist++
 		}
 	}
 	return reward
+}
+
+func maxReward(rewards ...float64) float64 {
+	maxReward := rewards[0]
+	for i := 1; i < len(rewards); i++ {
+		if rewards[i] > maxReward {
+			maxReward = rewards[i]
+		}
+	}
+	return maxReward
+}
+
+func maxDirection(rewards ...float64) pacmound.Direction {
+	maxDir, maxReward := 0, rewards[0]
+	for i := 1; i < len(rewards); i++ {
+		if rewards[i] > maxReward {
+			maxDir, maxReward = i, rewards[i]
+		}
+	}
+	return pacmound.Direction(maxDir)
 }

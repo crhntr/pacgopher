@@ -15,9 +15,12 @@ func getPython() pacmound.Agent {
 
 func main() {
 	agent := &markov.Agent{
+		CarrotWeight:   1,
+		ObsticleWeight: 1,
+		PythonWeight:   1,
+
 		DiscountFactor: 0.1,
-		LearningRate:   0.5,
-		QTable:         markov.NewQTable(5, 5),
+		LearningRate:   0.1,
 	}
 	getGopher := func() pacmound.Agent {
 		return agent

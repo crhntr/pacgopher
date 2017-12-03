@@ -14,5 +14,4 @@ func (p *Random) Warning(err error)                     {}
 func (p *Random) CalculateIntent() pacmound.Direction {
 	return pacmound.Direction(rand.Intn(4) + 1)
 }
-
-// func (p *Random) Kill() { /* What is Dead May Never Die*/ }
+func (p *Random) Kill() { /* What is Dead May Never Die*/ }
