@@ -30,10 +30,12 @@ func (m *Maze) loop() bool {
 
 				defer func(x, y int, hitObsticle bool) {
 					if !hitObsticle && !gopherDied {
-						agent.x = xIntent
-						agent.y = yIntent
-						(*m)[xIntent][yIntent].agent = (*m)[x][y].agent
-						(*m)[x][y].agent = nil
+						if (*m)[xIntent][yIntent].agent == nil {
+							agent.x = xIntent
+							agent.y = yIntent
+							(*m)[xIntent][yIntent].agent = (*m)[x][y].agent
+							(*m)[x][y].agent = nil
+						}
 					}
 				}(x, y, hitObsticle)
 			}
