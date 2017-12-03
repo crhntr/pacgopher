@@ -1,6 +1,9 @@
 package markov
 
 import (
+	"fmt"
+	"log"
+	"math"
 	"math/rand"
 
 	"github.com/crhntr/pacmound"
@@ -9,7 +12,7 @@ import (
 
 const (
 	numberOfActions = 4 + 1
-	InitalQ         = 0.00001
+	InitalQ         = 0.001
 )
 
 var (
@@ -17,12 +20,11 @@ var (
 )
 
 type Agent struct {
-	DiscountFactor float64 `json:"discountFactor"`
-	LearningRate   float64 `json:"learningRate"`
+	LearningRate float64 `json:"learningRate"`
 
 	CarrotWeight   float64 `json:"carrotWeight"`
-	ObsticleWeight float64 `json:"obsticleWeight"`
 	PythonWeight   float64 `json:"pythonWeight"`
+	ObsticleWeight float64 `json:"obsticleWeight"`
 
 	check  pacmound.ScopeGetter
 	reward pacmound.ScoreGetter
@@ -30,91 +32,122 @@ type Agent struct {
 	prevousAction pacmound.Direction
 
 	previousRewardTotal float64
-
-	count int
 }
 
 func (agent *Agent) SetScoreGetter(f pacmound.ScoreGetter) { agent.reward = f }
 func (agent *Agent) SetScopeGetter(f pacmound.ScopeGetter) { agent.check = f }
-func (agent *Agent) Warning(err error)                     {}
+
+func (agent *Agent) Damage(d pacmound.Damage) {
+	log.Printf("Markov Agent Took Damage %f %v", d, d.Error())
+}
+
 func (agent *Agent) CalculateIntent() pacmound.Direction {
-	defer func() { agent.count++ }()
-	if agent.count < 10 {
+	if agent.CarrotWeight == 0 || agent.PythonWeight == 0 {
+		agent.CarrotWeight, agent.PythonWeight, agent.ObsticleWeight = 1, 1, 1
 		return pacmound.Direction(rand.Intn(4) + 1)
 	}
-	return agent.QLearning(agent.LearningRate, agent.DiscountFactor)
+	return agent.QLearning(agent.LearningRate)
 }
 func (agent *Agent) Kill() {
-	agent.QLearning(agent.LearningRate, agent.DiscountFactor)
+	fmt.Printf("KILLED (score: %f)\n", agent.reward())
+	agent.QLearning(agent.LearningRate)
 }
+func (p *Agent) Win() {}
 
-func (agent *Agent) QLearning(α, γ float64) pacmound.Direction {
-	rewardCurrent := agent.reward() - agent.previousRewardTotal
-	agent.previousRewardTotal = agent.reward()
+func (agent *Agent) QLearning(α float64) pacmound.Direction {
+	totalReward := agent.reward()
+	r := totalReward - agent.previousRewardTotal
+	agent.previousRewardTotal = totalReward
 
-	xt, yt := agent.prevousAction.Transform()
-
-	actions := agents.Actions()[1:]
-	rewards := make([]float64, len(actions))
-	for i, action := range actions[1:] {
-		xtt, ytt := action.Transform()
-		block := agent.check(xtt, ytt)
-		reward := infSmall
-		if block != nil {
-			reward = agent.CarrotWeight * agent.calulateCarrotWeight(xt*xtt, yt*ytt)
-			reward += agent.PythonWeight * agent.calulatePythonWeight(xt*xtt, yt*ytt)
-			reward += agent.ObsticleWeight * agent.calulateObsticleWeight(xt*xtt, yt*ytt)
+	actions := agents.Actions()
+	d, maxScore := pacmound.DirectionNone, infSmall
+	for _, action := range actions {
+		xt, yty := action.Transform()
+		block := agent.check(xt, yty)
+		var reward float64
+		if block == nil {
+			continue
 		}
-		rewards[i] = reward
+		reward = agent.CarrotWeight * agent.calulateCarrotWeight(xt, yty)
+		reward += agent.PythonWeight * agent.calulatePythonWeight(xt, yty)
+		reward += agent.ObsticleWeight * agent.calulateObsticleWeight(xt, yty)
+
+		if reward > maxScore {
+			maxScore = reward
+			d = action
+		}
+	}
+	if maxScore <= infSmall {
+		d = pacmound.Direction(rand.Intn(4) + 1)
 	}
 
-	q := agent.CarrotWeight * agent.calulateCarrotWeight(0, 0)
-	q += agent.PythonWeight * agent.calulatePythonWeight(0, 0)
-	q += agent.ObsticleWeight * agent.calulateObsticleWeight(0, 0)
+	cw := agent.calulateCarrotWeight(0, 0)
+	pw := agent.calulatePythonWeight(0, 0)
+	ow := agent.calulateObsticleWeight(0, 0)
 
-	agent.CarrotWeight = agent.CarrotWeight + agent.LearningRate*(rewardCurrent-q)*agent.calulateCarrotWeight(xt, yt)
-	agent.PythonWeight = agent.PythonWeight + agent.LearningRate*(rewardCurrent-q)*agent.calulatePythonWeight(xt, yt)
-	agent.ObsticleWeight = agent.ObsticleWeight + agent.LearningRate*(rewardCurrent-q)*agent.calulateObsticleWeight(xt, yt)
+	q := agent.CarrotWeight * cw
+	q += agent.PythonWeight * pw
+	q += agent.ObsticleWeight * ow
 
-	agent.prevousAction = maxDirection(rewards...) + 1
-	return agent.prevousAction
+	fmt.Printf("CW: %f, PW: %f, OW: %f, cw: %f, pw: %f, ow: %f, q: %f, r: %f\n",
+		agent.CarrotWeight, agent.PythonWeight, agent.ObsticleWeight, cw, pw, ow, q, r)
+
+	if !math.IsNaN(cw) && !math.IsNaN(pw) && !math.IsNaN(ow) {
+		agent.CarrotWeight = agent.CarrotWeight + α*(r-q)*cw
+		agent.PythonWeight = agent.PythonWeight + α*(r-q)*pw
+		agent.ObsticleWeight = agent.ObsticleWeight + α*(r-q)*ow
+	}
+
+	agent.prevousAction = d
+	return d
 }
 
 func (agent *Agent) calulateCarrotWeight(x, y int) float64 {
 	reward := 0.0
-	actions := agents.Actions()
-	for _, action := range actions[1:] {
-		dist := 1
-		xt, yt := action.Transform()
-		for {
-			b := agent.check(x+xt*dist, y+yt*dist)
-			if b == nil || b.IsObstructed() || dist > 5 {
-				break
+	dist := 5
+	for xt := -dist; xt <= dist; xt++ {
+		for yt := -dist; yt <= dist; yt++ {
+			b := agent.check(xt, yt)
+			if b != nil {
+				if r := b.Reward(); r > 0 {
+					if n := math.Sqrt(float64((x-xt)*(x-xt) + (y-yt)*(y-yt))); n > 0.5 {
+						reward += (1 / n) * r
+					}
+				}
 			}
-			dist++
-			reward += b.Reward() / float64(dist*dist)
 		}
 	}
-	return reward
+	if reward < InitalQ {
+		return InitalQ
+	}
+	return 1 / (reward * reward)
 }
 func (agent *Agent) calulatePythonWeight(x, y int) float64 {
 	reward := 0.0
-	actions := agents.Actions()
-	for _, action := range actions[1:] {
-		dist := 1
-		xt, yt := action.Transform()
-		for {
-			b := agent.check(x+xt*dist, y+yt*dist)
-			if b == nil || b.IsObstructed() || dist > 5 {
-				break
-			}
-			dist++
-			if b.IsOccupied() {
-				reward += 1 / float64(dist)
+	dist := 2
+	for xt := -dist; xt <= dist; xt++ {
+		for yt := -dist; yt <= dist; yt++ {
+			if !(yt == y && xt == x) {
+				b := agent.check(xt, yt)
+				if b != nil && b.IsOccupiedWithPython() && !(yt == y && xt == x) {
+					fmt.Print("*")
+					if n := math.Sqrt(float64((x-xt)*(x-xt) + (y-yt)*(y-yt))); n > 0.5 {
+						reward += n
+					}
+				} else {
+					fmt.Print("-")
+				}
+			} else {
+				fmt.Print("@")
 			}
 		}
+		fmt.Println()
 	}
-	return reward
+	fmt.Println(1 / (reward * reward))
+	if reward < InitalQ {
+		return InitalQ
+	}
+	return -1 / (reward * reward)
 }
 func (agent *Agent) calulateObsticleWeight(x, y int) float64 {
 	reward := 0.0
@@ -122,34 +155,34 @@ func (agent *Agent) calulateObsticleWeight(x, y int) float64 {
 	for _, action := range actions[1:] {
 		dist := 1
 		xt, yt := action.Transform()
-		for {
-			b := agent.check(x+xt*dist, y+yt*dist)
-			if b == nil || b.IsObstructed() || dist > 5 {
-				reward += 1 / float64(dist)
-				break
-			}
-			dist++
+		b := agent.check(x+xt, y+yt)
+		if b == nil || b.IsObstructed() || dist > 5 {
+			reward += 1
+			break
 		}
 	}
-	return reward
+	if reward < InitalQ {
+		return InitalQ
+	}
+	return 1 / (reward * reward)
 }
 
 func maxReward(rewards ...float64) float64 {
 	maxReward := rewards[0]
 	for i := 1; i < len(rewards); i++ {
-		if rewards[i] > maxReward {
+		if rewards[i] > maxReward && !math.IsNaN(rewards[i]) {
 			maxReward = rewards[i]
 		}
 	}
 	return maxReward
 }
 
-func maxDirection(rewards ...float64) pacmound.Direction {
+func maxDirection(rewards []float64, actions []pacmound.Direction) pacmound.Direction {
 	maxDir, maxReward := 0, rewards[0]
 	for i := 1; i < len(rewards); i++ {
-		if rewards[i] > maxReward {
+		if rewards[i] > maxReward && !math.IsNaN(rewards[i]) {
 			maxDir, maxReward = i, rewards[i]
 		}
 	}
-	return pacmound.Direction(maxDir)
+	return actions[maxDir]
 }
