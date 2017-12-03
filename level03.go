@@ -2,7 +2,6 @@ package pacmound
 
 import (
 	"encoding/json"
-	"math/rand"
 	"net/http"
 	"strconv"
 )
@@ -20,43 +19,75 @@ func Level03(gopher, python Agent) {
 }
 
 func level03(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool) {
-	const height, width = 10, 50
-	maze := NewEmptyMaze(height, width)
-	for x := 0; x < height; x++ {
-		maze.setObsticle(x, 0)
-		maze.setObsticle(x, width-1)
-		for y := 0; y < width; y++ {
-			maze.setObsticle(0, y)
-			maze.setObsticle(height-1, y)
-		}
-	}
+	const size = 12
+	maze := NewEmptyMaze(size, size)
 
-	for x := 0; x < height; x++ {
-		for y := 0; y < width; y++ {
+	for x := 0; x < size; x++ {
+		for y := 0; y < size; y++ {
 			if !maze[x][y].obsticle {
-				if rand.Intn(100) > 93 {
-					pythonData, err := maze.setAgent(7, 7, python)
-					must(err)
-					pythonData.t = -1
-					pythonData.score = 1000
-					python.SetScopeGetter(newScopeGetter(maze, pythonData))
-					python.SetScoreGetter(pythonData.Score)
-				} else if rand.Intn(100) < 5 {
-					maze.setObsticle(x, y)
-				} else if rand.Intn(100) > 100-30 {
-					maze.setReward(x, y, float64(int64(rand.Float64()*10*100))/100)
-				}
+				maze[x][y].reward = 1
 			}
 		}
 	}
 
+	for i := 0; i < size; i++ {
+		maze.setObsticle(0, i)
+		maze.setObsticle(i, 0)
+		maze.setObsticle(i, size-1)
+		maze.setObsticle(size-1, i)
+	}
+
+	maze.setObsticle(5, 7)
+	maze.setObsticle(5, 8)
+	maze.setObsticle(5, 9)
+
+	maze.setObsticle(6, 6)
+	maze.setObsticle(7, 5)
+	maze.setObsticle(7, 6)
+	maze.setObsticle(8, 5)
+	maze.setObsticle(8, 6)
+	maze.setObsticle(9, 5)
+	maze.setObsticle(9, 6)
+
+	maze.setObsticle(9, 9)
+	maze.setObsticle(9, 8)
+	maze.setObsticle(8, 8)
+	maze.setObsticle(8, 9)
+
+	maze.setObsticle(2, 9)
+	maze.setObsticle(3, 9)
+	maze.setObsticle(2, 8)
+	maze.setObsticle(3, 8)
+	maze.setObsticle(2, 7)
+	maze.setObsticle(3, 7)
+	maze.setObsticle(2, 6)
+	maze.setObsticle(3, 4)
+
+	maze.setObsticle(4, 6)
+	// maze.setObsticle(4, 5)
+	maze.setObsticle(4, 4)
+	maze.setObsticle(4, 3)
+	maze.setObsticle(4, 2)
+	maze.setObsticle(4, 1)
+
+	maze.setObsticle(9, 2)
+	maze.setObsticle(9, 3)
+	maze.setObsticle(9, 4)
+
 	maze[2][2].reward = 0
-	maze[2][2].obsticle = false
+
 	gopherData, err := maze.setAgent(2, 2, gopher)
 	must(err)
 	gopherData.t = 1
 	gopher.SetScopeGetter(newScopeGetter(maze, gopherData))
 	gopher.SetScoreGetter(gopherData.Score)
+
+	pythonData, err := maze.setAgent(7, 7, python)
+	must(err)
+	pythonData.t = -1
+	pythonData.score = 1000
+	python.SetScopeGetter(newScopeGetter(maze, pythonData))
+	python.SetScoreGetter(pythonData.Score)
 
 	for loop(&maze, gopherData) {
 	}
@@ -64,6 +95,7 @@ func level03(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool
 
 func Level03Handler(getGopher, getPython AgentGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		gopher, python := getGopher(), getPython()
 		maxLoops := 500
 		loopLimit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 		if err != nil || loopLimit > maxLoops {
@@ -78,7 +110,6 @@ func Level03Handler(getGopher, getPython AgentGetter) http.HandlerFunc {
 		}{}
 		data.MaxSteps = loopLimit
 
-		gopher, python := getGopher(), getPython()
 		level03(gopher, python, func(m *Maze, agentData *AgentData) bool {
 			data.States = append(data.States, m.encodable())
 			data.Scores = append(data.Scores, agentData.score)

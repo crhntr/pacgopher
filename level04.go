@@ -2,14 +2,15 @@ package pacmound
 
 import (
 	"encoding/json"
+	"math/rand"
 	"net/http"
 	"strconv"
 )
 
-func Level02(gopher, python Agent) {
+func Level04(gopher, python Agent) {
 	loopCount, maxLoops := 0.0, 8.0*8.0
 
-	level02(gopher, python, func(m *Maze, agentData *AgentData) bool {
+	level04(gopher, python, func(m *Maze, agentData *AgentData) bool {
 		if !m.loop() || agentData.score >= (63-(loopCount*LivingCost))-0.001 || loopCount > maxLoops {
 			return false
 		}
@@ -18,8 +19,8 @@ func Level02(gopher, python Agent) {
 	})
 }
 
-func level02(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool) {
-	const height, width = 9, 11
+func level04(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool) {
+	const height, width = 10, 50
 	maze := NewEmptyMaze(height, width)
 	for x := 0; x < height; x++ {
 		maze.setObsticle(x, 0)
@@ -30,12 +31,21 @@ func level02(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool
 		}
 	}
 
-	for x := 1; x < height-1; x++ {
-		for y := 1; y < width-1; y++ {
-			if (y+2)%2 == 0 && (x+2)%2 == 0 {
-				maze.setObsticle(x, y)
-			} else {
-				maze.setReward(x, y, 1)
+	for x := 0; x < height; x++ {
+		for y := 0; y < width; y++ {
+			if !maze[x][y].obsticle {
+				if rand.Intn(100) > 93 {
+					pythonData, err := maze.setAgent(7, 7, python)
+					must(err)
+					pythonData.t = -1
+					pythonData.score = 1000
+					python.SetScopeGetter(newScopeGetter(maze, pythonData))
+					python.SetScoreGetter(pythonData.Score)
+				} else if rand.Intn(100) < 5 {
+					maze.setObsticle(x, y)
+				} else if rand.Intn(100) > 100-30 {
+					maze.setReward(x, y, float64(int64(rand.Float64()*10*100))/100)
+				}
 			}
 		}
 	}
@@ -52,7 +62,7 @@ func level02(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool
 	}
 }
 
-func Level02Handler(getGopher, getPython AgentGetter) http.HandlerFunc {
+func Level04Handler(getGopher, getPython AgentGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		maxLoops := 500
 		loopLimit, err := strconv.Atoi(r.URL.Query().Get("limit"))
@@ -69,7 +79,7 @@ func Level02Handler(getGopher, getPython AgentGetter) http.HandlerFunc {
 		data.MaxSteps = loopLimit
 
 		gopher, python := getGopher(), getPython()
-		level02(gopher, python, func(m *Maze, agentData *AgentData) bool {
+		level04(gopher, python, func(m *Maze, agentData *AgentData) bool {
 			data.States = append(data.States, m.encodable())
 			data.Scores = append(data.Scores, agentData.score)
 
