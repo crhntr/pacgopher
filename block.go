@@ -12,6 +12,8 @@ func (b Block) IsObstructed() bool { return b.obsticle }
 
 func (b Block) IsOccupied() bool { return b.agent != nil }
 
+func (b Block) IsOccupiedWithPython() bool { return b.agent != nil && b.agent.t < 0 }
+
 func (b Block) Reward() float64 {
 	if b.obsticle {
 		return ObsticleCollisionCost
