@@ -1,7 +1,7 @@
 package pacmound
 
 const (
-	DeathCost             = 1000
+	DeathCost             = -1000
 	ObsticleCollisionCost = -1
 	LivingCost            = 0.05
 )
