@@ -93,8 +93,9 @@ func level02(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool
 	}
 }
 
-func Level02Handler(gopher, python Agent) http.HandlerFunc {
+func Level02Handler(getGopher, getPython AgentGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		gopher, python := getGopher(), getPython()
 		maxLoops := 500
 		loopLimit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 		if err != nil || loopLimit > maxLoops {

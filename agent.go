@@ -6,6 +6,8 @@ package pacmound
 // zero value is not an angent (empty)
 type AgentType int
 
+type AgentGetter func() Agent
+
 type Agent interface {
 	Warning(err error)
 	CalculateIntent() Direction // player decision loop

@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func NewGameMux(gopher Agent, python1, python2, python3 Agent) http.Handler {
+func NewGameMux(getGopher, getPython AgentGetter) http.Handler {
 	mux := http.NewServeMux()
 	serveFile(mux, "/", "../../src/index.html", "")
 	serveFile(mux, "/src/gopher.png", "../../src/gopher.png", "")
@@ -13,10 +13,10 @@ func NewGameMux(gopher Agent, python1, python2, python3 Agent) http.Handler {
 	serveFile(mux, "/src/stone.png", "../../src/stone.png", "")
 	serveFile(mux, "/src/carrot.png", "../../src/carrot.png", "")
 
-	mux.HandleFunc("/api/level/00", Level00Handler(gopher))
-	mux.HandleFunc("/api/level/01", Level01Handler(gopher, python1))
-	mux.HandleFunc("/api/level/02", Level02Handler(gopher, python1))
-	mux.HandleFunc("/api/level/03", Level03Handler(gopher, python1))
+	mux.HandleFunc("/api/level/00", Level00Handler(getGopher()))
+	mux.HandleFunc("/api/level/01", Level01Handler(getGopher, getPython))
+	mux.HandleFunc("/api/level/02", Level02Handler(getGopher, getPython))
+	mux.HandleFunc("/api/level/03", Level03Handler(getGopher, getPython))
 	return mux
 }
 

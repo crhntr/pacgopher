@@ -20,7 +20,7 @@ func Level03(gopher, python Agent) {
 }
 
 func level03(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool) {
-	const height, width = 45, 50
+	const height, width = 10, 50
 	maze := NewEmptyMaze(height, width)
 	for x := 0; x < height; x++ {
 		maze.setObsticle(x, 0)
@@ -50,8 +50,9 @@ func level03(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool
 		}
 	}
 
-	maze[1][1].reward = 0
-	gopherData, err := maze.setAgent(1, 1, gopher)
+	maze[2][2].reward = 0
+	maze[2][2].obsticle = false
+	gopherData, err := maze.setAgent(2, 2, gopher)
 	must(err)
 	gopherData.t = 1
 	gopher.SetScopeGetter(newScopeGetter(maze, gopherData))
@@ -61,9 +62,9 @@ func level03(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool
 	}
 }
 
-func Level03Handler(gopher, python Agent) http.HandlerFunc {
+func Level03Handler(getGopher, getPython AgentGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		maxLoops := 5
+		maxLoops := 500
 		loopLimit, err := strconv.Atoi(r.URL.Query().Get("limit"))
 		if err != nil || loopLimit > maxLoops {
 			loopLimit = maxLoops
@@ -77,6 +78,7 @@ func Level03Handler(gopher, python Agent) http.HandlerFunc {
 		}{}
 		data.MaxSteps = loopLimit
 
+		gopher, python := getGopher(), getPython()
 		level03(gopher, python, func(m *Maze, agentData *AgentData) bool {
 			data.States = append(data.States, m.encodable())
 			data.Scores = append(data.Scores, agentData.score)
