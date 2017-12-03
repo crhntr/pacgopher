@@ -4,21 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
-func Level02(gopher, python1, python2 Agent) {
-	loopCount, maxLoops := 0.0, 2000.0
-
-	level02(gopher, python1, python2, func(m *Maze, agentData *AgentData) bool {
-		if !m.loop() || agentData.score >= (63-(loopCount*LivingCost))-0.001 || loopCount > maxLoops {
-			return false
-		}
-		loopCount++
-		return true
-	})
-}
-
-func level02(gopher, python1, python2 Agent, loop func(m *Maze, agentData *AgentData) bool) {
+func level02(getGopher, getPython AgentGetter, loop func(m *Maze, agentData *AgentData) bool) {
 	const height, width = 9, 11
 	maze := NewEmptyMaze(height, width)
 	for x := 0; x < height; x++ {
@@ -42,12 +31,14 @@ func level02(gopher, python1, python2 Agent, loop func(m *Maze, agentData *Agent
 
 	maze[1][1].reward = 0
 	maze[1][1].obsticle = false
+	gopher := getGopher()
 	gopherData, err := maze.setAgent(1, 1, gopher)
 	must(err)
 	gopherData.t = 1
 	gopher.SetScopeGetter(newScopeGetter(maze, gopherData))
 	gopher.SetScoreGetter(gopherData.Score)
 
+	python1 := getPython()
 	python1Data, err := maze.setAgent(3, 8, python1)
 	must(err)
 	python1Data.t = -1
@@ -55,6 +46,7 @@ func level02(gopher, python1, python2 Agent, loop func(m *Maze, agentData *Agent
 	python1.SetScopeGetter(newScopeGetter(maze, python1Data))
 	python1.SetScoreGetter(python1Data.Score)
 
+	python2 := getPython()
 	python2Data, err := maze.setAgent(6, 5, python2)
 	must(err)
 	python2Data.t = -1
@@ -66,9 +58,10 @@ func level02(gopher, python1, python2 Agent, loop func(m *Maze, agentData *Agent
 	}
 }
 
-func Level02Handler(getGopher, getPython AgentGetter) http.HandlerFunc {
+func Level02Handler(getGopher, getPython AgentGetter, mut *sync.Mutex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		training := r.URL.Query().Get("train") == trueStr
+		mut.Lock()
+		defer mut.Unlock()
 
 		maxLoops := MaxLoops
 		loopLimit, err := strconv.Atoi(r.URL.Query().Get("limit"))
@@ -81,15 +74,13 @@ func Level02Handler(getGopher, getPython AgentGetter) http.HandlerFunc {
 		data.MaxSteps = loopLimit
 
 		gopher := getGopher()
-		level02(gopher, getPython(), getPython(), func(m *Maze, agentData *AgentData) bool {
-			if !training {
-				data.States = append(data.States, m.encodable())
-				data.Scores = append(data.Scores, agentData.score)
-			}
+		level02(getGopher, getPython, func(m *Maze, agentData *AgentData) bool {
+			data.States = append(data.States, m.encodable())
+			data.Scores = append(data.Scores, agentData.score)
 
 			remReward := m.RemainingReward()
 
-			if !m.loop() || remReward <= 0 || (!training && loopCount > loopLimit) || agentData.dead {
+			if !m.loop() || remReward <= 0 || loopCount > loopLimit || agentData.dead {
 				data.Scores = append(data.Scores, agentData.score)
 				gopher.CalculateIntent()
 				return false
