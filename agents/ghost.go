@@ -19,7 +19,7 @@ func (p *Ghost) SetScoreGetter(f pacmound.ScoreGetter) { p.score = f }
 func (p *Ghost) SetScopeGetter(f pacmound.ScopeGetter) { p.scope = f }
 func (p *Ghost) Warning(err error)                     { log.Printf("GHOST: %s", err) }
 func (p *Ghost) CalculateIntent() pacmound.Direction {
-	return directions[rand.Intn(len(directions))]
+	return directionsSlice()[rand.Intn(4)]
 }
 
 // func (p *Ghost) Kill() { /* What is Dead May Never Die*/ }

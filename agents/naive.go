@@ -1,14 +1,16 @@
 package agents
 
-import "github.com/crhntr/pacmound"
+import (
+	"fmt"
+	"math/rand"
+
+	"github.com/crhntr/pacmound"
+)
 
 type Naive struct {
 	// dead  bool
 	score pacmound.ScoreGetter
 	scope pacmound.ScopeGetter
-
-	searchDistance, unchangedScoreCount int
-	previousScore                       float64
 
 	warning error
 }
@@ -20,35 +22,31 @@ func (p *Naive) Warning(err error)                     { p.warning = err }
 func (p *Naive) CalculateIntent() pacmound.Direction {
 	// time.Sleep(time.Second / 10)
 
-	d, maxReward := 0, 0.0
+	directions := directionsSlice()
+	rewards := make([]float64, len(directions))
 
 	for i, dir := range directions {
 		x, y := dir.Transform()
 
 		dirReward := 0.0
-		for out := 0; out <= p.searchDistance; out++ {
+		out := 1
+		for {
 			b := p.scope(x*out, y*out)
-			if b == nil || b.IsOccupied() || b.IsObstructed() {
-				continue
+			if b.IsOccupied() {
+				dirReward += -1000
+			}
+			if b == nil || b.IsObstructed() {
+				break
 			}
 			dirReward += b.Reward()
-			if dirReward > maxReward {
-				d, maxReward = i, dirReward
-			}
+			out++
 		}
-		maxReward = dirReward
-	}
 
-	if p.score() == p.previousScore {
-		p.unchangedScoreCount++
-		if p.unchangedScoreCount > 0 {
-			p.searchDistance++
-		}
-	} else {
-		p.previousScore = p.score()
-		p.unchangedScoreCount = 0
+		rewards[i] = dirReward
 	}
-	return directions[d]
+	_, directions = removeMinimumScoringDirections(rewards, directions)
+	fmt.Println(directions)
+	return directions[rand.Intn(len(directions))]
 }
 
 // func (p *Naive) Kill()                                 { p.dead = true }
