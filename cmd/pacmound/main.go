@@ -13,7 +13,7 @@ func getGopher() pacmound.Agent {
 }
 
 func getPython() pacmound.Agent {
-	return &agents.Ghost{}
+	return &agents.Random{}
 }
 
 func main() {
