@@ -6,10 +6,10 @@ import (
 	"strconv"
 )
 
-func Level02(gopher, python Agent) {
+func Level02(gopher, python1, python2 Agent) {
 	loopCount, maxLoops := 0.0, 8.0*8.0
 
-	level02(gopher, python, func(m *Maze, agentData *AgentData) bool {
+	level02(gopher, python1, python2, func(m *Maze, agentData *AgentData) bool {
 		if !m.loop() || agentData.score >= (63-(loopCount*LivingCost))-0.001 || loopCount > maxLoops {
 			return false
 		}
@@ -18,7 +18,7 @@ func Level02(gopher, python Agent) {
 	})
 }
 
-func level02(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool) {
+func level02(gopher, python1, python2 Agent, loop func(m *Maze, agentData *AgentData) bool) {
 	const height, width = 9, 11
 	maze := NewEmptyMaze(height, width)
 	for x := 0; x < height; x++ {
@@ -40,13 +40,27 @@ func level02(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool
 		}
 	}
 
-	maze[2][2].reward = 0
-	maze[2][2].obsticle = false
-	gopherData, err := maze.setAgent(2, 2, gopher)
+	maze[1][1].reward = 0
+	maze[1][1].obsticle = false
+	gopherData, err := maze.setAgent(1, 1, gopher)
 	must(err)
 	gopherData.t = 1
 	gopher.SetScopeGetter(newScopeGetter(maze, gopherData))
 	gopher.SetScoreGetter(gopherData.Score)
+
+	python1Data, err := maze.setAgent(3, 8, python1)
+	must(err)
+	python1Data.t = -1
+	python1Data.score = 1000
+	python1.SetScopeGetter(newScopeGetter(maze, python1Data))
+	python1.SetScoreGetter(python1Data.Score)
+
+	python2Data, err := maze.setAgent(6, 5, python2)
+	must(err)
+	python2Data.t = -1
+	python2Data.score = 1000
+	python2.SetScopeGetter(newScopeGetter(maze, python2Data))
+	python2.SetScoreGetter(python2Data.Score)
 
 	for loop(&maze, gopherData) {
 	}
@@ -68,8 +82,8 @@ func Level02Handler(getGopher, getPython AgentGetter) http.HandlerFunc {
 		}{}
 		data.MaxSteps = loopLimit
 
-		gopher, python := getGopher(), getPython()
-		level02(gopher, python, func(m *Maze, agentData *AgentData) bool {
+		gopher := getGopher()
+		level02(gopher, getPython(), getPython(), func(m *Maze, agentData *AgentData) bool {
 			data.States = append(data.States, m.encodable())
 			data.Scores = append(data.Scores, agentData.score)
 

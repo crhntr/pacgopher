@@ -7,20 +7,8 @@ import (
 	"strconv"
 )
 
-func Level04(gopher, python Agent) {
-	loopCount, maxLoops := 0.0, 8.0*8.0
-
-	level04(gopher, python, func(m *Maze, agentData *AgentData) bool {
-		if !m.loop() || agentData.score >= (63-(loopCount*LivingCost))-0.001 || loopCount > maxLoops {
-			return false
-		}
-		loopCount++
-		return true
-	})
-}
-
-func level04(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool) {
-	const height, width = 10, 50
+func level04(gopher Agent, getPython AgentGetter, loop func(m *Maze, agentData *AgentData) bool) {
+	const height, width = 8, 32
 	maze := NewEmptyMaze(height, width)
 	for x := 0; x < height; x++ {
 		maze.setObsticle(x, 0)
@@ -31,11 +19,12 @@ func level04(gopher, python Agent, loop func(m *Maze, agentData *AgentData) bool
 		}
 	}
 
-	for x := 0; x < height; x++ {
-		for y := 0; y < width; y++ {
+	for x := 0; x < height-1; x++ {
+		for y := 0; y < width-1; y++ {
 			if !maze[x][y].obsticle {
-				if rand.Intn(100) > 93 {
-					pythonData, err := maze.setAgent(7, 7, python)
+				if rand.Intn(100) > 97 {
+					python := getPython()
+					pythonData, err := maze.setAgent(x, y, python)
 					must(err)
 					pythonData.t = -1
 					pythonData.score = 1000
@@ -78,8 +67,8 @@ func Level04Handler(getGopher, getPython AgentGetter) http.HandlerFunc {
 		}{}
 		data.MaxSteps = loopLimit
 
-		gopher, python := getGopher(), getPython()
-		level04(gopher, python, func(m *Maze, agentData *AgentData) bool {
+		gopher := getGopher()
+		level04(gopher, getPython, func(m *Maze, agentData *AgentData) bool {
 			data.States = append(data.States, m.encodable())
 			data.Scores = append(data.Scores, agentData.score)
 
