@@ -7,25 +7,40 @@
 <body>
   <div id="app">
     <div v-if="states.length > 0">
-      <button @click="endGame()">EndGame</button>
-      <button @click="step > 0 ? step-- : step">Previous Step</button>
-      <button @click="step < states.length ? step++ : step">Next Step</button>
-      <button @click="play()">Play</button>
-      <button @click="stopPlaying()">Stop</button>
+      <div>
+        <table class="control">
+          <tr>
+            <tr><td>Step</td><td>{{step}}</td></tr>
+            <tr><td>Score</td><td>{{scores[step]}}</td></tr>
+            <td colspan="2">
+              <button @click="endGame()">Clear</button>
+              <button @click="step > 0 ? step-- : step">Previous</button>
+              <button @click="step < states.length ? step++ : step">Next</button>
+              <button @click="play()">Play</button>
+              <button @click="stopPlaying()">Stop</button>
+            </td>
+          </tr>
+        </table>
+      </div>
 
-      <div v-for="row in states[step]" class="row">
-        <div v-for="t in row" v-bind:class="{'gopher': t.agent > 0, 'obsticle': t.obsticle && !t.gopher, 'tile': true, python: t.agent < 0, reward: t.reward > 0 && t.agent == 0}">
+      <div id="maze" v-bind:style="{width: (this.states[0][0].length * 40) + 'px'}">
+        <div v-for="row in states[step]" class="row">
+          <div v-for="t in row" v-bind:class="{'gopher': t.agent > 0, 'obsticle': t.obsticle && !t.gopher, 'tile': true, python: t.agent < 0, reward: t.reward > 0 && t.agent == 0}">
+          </div>
         </div>
       </div>
-      <table>
-        <tr><td>Step</td><td>{{step}}</td></tr>
-        <tr><td>Score</td><td>{{scores[step]}}</td></tr>
-      </table>
     </div>
     <div v-else>
-      <button @click="createGame('00')">Level 00</button>
-      <button @click="createGame('01')">Level 01</button>
-      <button @click="createGame('02')">Level 02</button>
+      <table class="control">
+        <tr>
+          <td colspan="2">
+            <button @click="createGame('00')">Level 00</button>
+            <button @click="createGame('01')">Level 01</button>
+            <button @click="createGame('02')">Level 02</button>
+            <button @click="createGame('03')">Level 03</button>
+          </td>
+        </tr>
+      </table>
     </div>
   </div>
 </body>
@@ -77,74 +92,79 @@ var app = new Vue({
     stopPlaying: function () {
       clearInterval(this.stepper)
       this.stepper = null
-    },
+    }
   }
 })
 </script>
 <style>
 body {margin: 0;}
 html {
-  /*background: black;*/
   background-image: url("/src/dirt.png");
   background-repeat: repeat;
-  color: white;
   margin: 0;
 }
 #app{
   margin: 0;
 }
+#maze {}
 .tile {
   width: 40px;
   height: 40px;
   margin: 0;
   padding: 0;
+  border: none;
   float: left;
 }
 .obsticle {
-  background-image: url("/src/stone.png");
-  background-size: 40px 40px;
-  margin: 0px;
+  content: url("/src/stone.png");
 }
 .row {
+  margin: 0;
+  padding: 0;
   height: 40px;
-  width: 100vw
+  border: none;
 }
 .python {
-  width: 40px;
-  height: 40px;
-  /*border-radius: 6px;*/
-  margin: 0px;
-  background-image: url("/src/python.png");
-  background-repeat: none;
-  background-size: 40px 40px;
+  content: url("/src/python.png");
 }
 .gopher {
-  /*border-radius: 6px;*/
-  /*background: HSL(40, 90%, 69%);*/
-  background-image: url("/src/gopher.png");
-  background-repeat: none;
-  background-size: 40px 40px;
+  content: url("/src/gopher.png");
 }
 .reward {
-  background-image: url("/src/carrot.png");
-  background-size: 40px 40px;
-  background-repeat: none;
+  content: url("/src/carrot.png");
 }
 button {
   background: #1C1008;
   border: none;
   color: #97948C;
-  margin: 10px;
-  padding: 10px;
-  min-width: 120px;
+  margin: 2px;
+  padding: 5px;
+  width: 80px;
   height: 40px;
-  border-radius: 20px
+  border-radius: 4px
 }
 button:hover {
   box-shadow: 4px 4px 4px #26150B;
 }
 button:active {
   box-shadow: inset 4px 4px 4px #000;
+}
+table.control, table.control th {
+   border: 2px solid #26150B;
+}
+table.control {
+  position: fixed;
+  bottom: 10px;
+  width: 458px;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  background: #35200F;
+  color: #FF5700;
+}
+table.control td {
+  padding: 5px;
+  border: 2px dotted #26150B;
 }
 </style>
 </html>
