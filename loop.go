@@ -1,5 +1,7 @@
 package pacmound
 
+import "fmt"
+
 func (m *Maze) loop() bool {
 	for x := range *m {
 		for y := range (*m)[x] {
@@ -7,28 +9,8 @@ func (m *Maze) loop() bool {
 				agentIntent := agent.a.CalculateIntent()
 				xIntent, yIntent := move(m, agentIntent, agent.x, agent.y)
 
-				if otherAgent := m.Occupant(xIntent, yIntent); otherAgent != nil {
-					if fight(agent, otherAgent) {
-						return false
-					}
-				}
-
-				hitObsticle := m.IsObsticle(xIntent, yIntent)
-
-				if agent.t > 0 {
-					agent.score += (*m)[x][y].reward
-					(*m)[x][y].reward = 0
-
-					if hitObsticle {
-						agent.score -= ObsticleCollisionCost
-					}
-
-					if agent.score < 0 {
-						agent.RecordKill()
-						return false
-					}
-
-					agent.score -= LivingCost
+				if agent.IsGopher() {
+					fmt.Printf("(x: %d, y: %d) %s (x: %d, y: %d)\n\n\n", agent.x, agent.y, agentIntent, xIntent, yIntent)
 				}
 
 				defer func(x, y int) {
@@ -38,6 +20,20 @@ func (m *Maze) loop() bool {
 						(*m)[x][y].agent = nil
 					}
 				}(x, y)
+
+				if otherAgent := m.Occupant(xIntent, yIntent); otherAgent != nil {
+					if fight(agent, otherAgent) {
+						return false
+					}
+				}
+
+				if agent.t > 0 {
+					agent.score += m.getReward(x, y)
+					if m.IsObsticle(xIntent, yIntent) {
+						agent.Damage(DamageColision)
+					}
+					agent.Damage(DamageAgeing)
+				}
 			}
 		}
 	}
