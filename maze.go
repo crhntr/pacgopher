@@ -74,7 +74,7 @@ func (maze Maze) RewardAt(x, y int) (float64, error) {
 		return 0, ErrBeyondTheKnownMaze
 	}
 	if maze[x][y].obsticle {
-		return ObsticleCollisionCost, ErrCrashedIntoObsticle
+		return float64(DamageColision), ErrCrashedIntoObsticle
 	}
 	return maze[x][y].reward, nil
 }
