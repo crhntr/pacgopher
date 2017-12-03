@@ -74,3 +74,12 @@ var directions = []Direction{
 	DirectionSouth,
 	DirectionWest,
 }
+
+func Directions() []Direction {
+	return []Direction{
+		DirectionNorth,
+		DirectionEast,
+		DirectionSouth,
+		DirectionWest,
+	}
+}
