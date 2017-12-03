@@ -9,11 +9,6 @@ import (
 const (
 	ObsticleCollisionCost = -0.5
 	LivingCost            = 0
-
-	MoveLeftErrorProbability        = 0.1
-	MoveRightErrorProbability       = 0.1
-	MoveCorrectDirectionProbability = 1.0 -
-		(MoveLeftErrorProbability + MoveRightErrorProbability)
 )
 
 var (
@@ -59,6 +54,7 @@ func (maze *Maze) setObsticle(x, y int) error {
 		return ErrBeyondTheKnownMaze
 	}
 	(*maze)[x][y].obsticle = true
+	(*maze)[x][y].reward = 0
 	return nil
 }
 
