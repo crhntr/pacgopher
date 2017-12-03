@@ -2,7 +2,7 @@ package agents
 
 import "github.com/crhntr/pacmound"
 
-func directionsSlice() []pacmound.Direction {
+func Actions() []pacmound.Direction {
 	return []pacmound.Direction{
 		pacmound.DirectionNorth,
 		pacmound.DirectionEast,

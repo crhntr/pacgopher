@@ -21,7 +21,7 @@ func (p *Simple) Warning(err error)                     { p.warning = err }
 func (p *Simple) CalculateIntent() pacmound.Direction {
 	// time.Sleep(time.Second / 10)
 
-	directions := directionsSlice()
+	directions := Actions()
 	rewards := make([]float64, len(directions))
 
 	for i, dir := range directions {
