@@ -1,14 +1,5 @@
 package pacmound
 
-const (
-	DeathCost             = 100
-	ObsticleCollisionCost = 0.1
-	LivingCost            = 0.01
-
-	fightCost  = 500
-	fightPrize = 500
-)
-
 // AgentType represents how the game should handle an agent
 // negative agents are pythons
 // positive agents are gophers
@@ -18,8 +9,9 @@ type AgentType int
 type AgentGetter func() Agent
 
 type Agent interface {
-	Warning(err error)
 	Kill()
+	Damage(damage Damage)
+
 	CalculateIntent() Direction // player decision loop
 
 	SetScoreGetter(f ScoreGetter)
@@ -47,11 +39,6 @@ func (ad *AgentData) IsGopher() bool {
 
 func (ad *AgentData) Score() float64 {
 	return ad.score
-}
-
-func (ad *AgentData) RecordKill() {
-	ad.dead = true
-	ad.a.Kill()
 }
 
 func newScopeGetter(maze Maze, ad *AgentData) ScopeGetter {
@@ -90,15 +77,13 @@ func fight(agent1, agent2 *AgentData) bool {
 		return true
 	}
 	if agent1.IsGopher() && agent2.IsPython() {
-		agent1.dead = true
-		agent1.score -= fightCost
-		agent2.score += fightPrize
+		agent1.Damage(DamageLostFight)
+		agent2.score += agent1.score
 		return true
 	}
 	if agent2.IsGopher() && agent1.IsPython() {
-		agent2.dead = true
-		agent2.score -= fightCost
-		agent1.score += fightCost
+		agent2.Damage(DamageLostFight)
+		agent1.score += agent2.score
 		return true
 	}
 	return false
