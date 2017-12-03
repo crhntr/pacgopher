@@ -2,9 +2,8 @@ package pacmound
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
-	"strconv"
-	"sync"
 )
 
 var (
@@ -16,7 +15,6 @@ const (
 )
 
 func NewGameMux(getGopher, getPython AgentGetter) http.Handler {
-	mut := &sync.Mutex{}
 	mux := http.NewServeMux()
 	serveFile(mux, "/", "../../src/index.html", "")
 	serveFile(mux, "/src/gopher.png", "../../src/gopher.png", "")
@@ -25,11 +23,11 @@ func NewGameMux(getGopher, getPython AgentGetter) http.Handler {
 	serveFile(mux, "/src/stone.png", "../../src/stone.png", "")
 	serveFile(mux, "/src/carrot.png", "../../src/carrot.png", "")
 
-	mux.HandleFunc("/api/level/00", LevelHandler(level00, getGopher, getPython, mut))
-	mux.HandleFunc("/api/level/01", LevelHandler(level01, getGopher, getPython, mut))
-	mux.HandleFunc("/api/level/02", LevelHandler(level02, getGopher, getPython, mut))
-	mux.HandleFunc("/api/level/03", LevelHandler(level03, getGopher, getPython, mut))
-	mux.HandleFunc("/api/level/04", LevelHandler(level04, getGopher, getPython, mut))
+	mux.HandleFunc("/api/level/00", LevelHandler(level00, getGopher, getPython))
+	mux.HandleFunc("/api/level/01", LevelHandler(level01, getGopher, getPython))
+	mux.HandleFunc("/api/level/02", LevelHandler(level02, getGopher, getPython))
+	mux.HandleFunc("/api/level/03", LevelHandler(level03, getGopher, getPython))
+	mux.HandleFunc("/api/level/04", LevelHandler(level04, getGopher, getPython))
 	return mux
 }
 
@@ -42,20 +40,12 @@ type LevelData struct {
 
 type LevelFunc func(getGopher, getPython AgentGetter, loop func(m *Maze, agentData *AgentData) bool)
 
-func LevelHandler(levelFunc LevelFunc, getGopher, getPython AgentGetter, mut *sync.Mutex) http.HandlerFunc {
+func LevelHandler(levelFunc LevelFunc, getGopher, getPython AgentGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		mut.Lock()
-		defer mut.Unlock()
-
-		maxLoops := MaxLoops
-		loopLimit, err := strconv.Atoi(r.URL.Query().Get("limit"))
-		if err != nil {
-			loopLimit = maxLoops
-		}
 		loopCount := 0
 
 		data := LevelData{}
-		data.MaxSteps = loopLimit
+		data.MaxSteps = MaxLoops
 
 		levelFunc(getGopher, getPython, func(m *Maze, agentData *AgentData) bool {
 			data.States = append(data.States, m.encodable())
@@ -63,7 +53,7 @@ func LevelHandler(levelFunc LevelFunc, getGopher, getPython AgentGetter, mut *sy
 
 			remReward := m.RemainingReward()
 
-			if !m.loop() || remReward <= 0 || loopCount > loopLimit || agentData.dead {
+			if !m.loop() || remReward <= 0 || loopCount > MaxLoops || agentData.dead {
 				data.Scores = append(data.Scores, agentData.score)
 				return false
 			}
@@ -71,8 +61,11 @@ func LevelHandler(levelFunc LevelFunc, getGopher, getPython AgentGetter, mut *sy
 			return true
 		})
 
-		data.Agent = getGopher()
-		json.NewEncoder(w).Encode(data)
+		// data.Agent = getGopher()
+		if err := json.NewEncoder(w).Encode(data); err != nil {
+			log.Print(data)
+			log.Print(err)
+		}
 	}
 }
 
