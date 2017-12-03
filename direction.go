@@ -1,6 +1,9 @@
 package pacmound
 
-import "math/rand"
+import (
+	"math/rand"
+	"strings"
+)
 
 type Direction int
 
@@ -31,6 +34,14 @@ func RandomDirection() Direction {
 
 func (dir Direction) String() string {
 	return []string{"?", "v", ">", "^", "<"}[dir]
+}
+
+func ParseDirection(str string) Direction {
+	index := strings.Index("?v>^<", str)
+	if index < 0 {
+		return DirectionNone
+	}
+	return directions[index]
 }
 
 func (dir Direction) Transform() (x, y int) {
