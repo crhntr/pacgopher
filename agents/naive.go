@@ -32,9 +32,9 @@ func (p *Naive) CalculateIntent() pacmound.Direction {
 		for {
 			b := p.scope(x*out, y*out)
 			if b.IsOccupied() {
-				dirReward += -1000
+				dirReward *= -1000
 			}
-			if b == nil || b.IsObstructed() {
+			if b == nil || b.IsObstructed() || out > 5 {
 				break
 			}
 			dirReward += b.Reward()
