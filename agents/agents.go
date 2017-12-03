@@ -3,12 +3,7 @@ package agents
 import "github.com/crhntr/pacmound"
 
 func Actions() []pacmound.Direction {
-	return []pacmound.Direction{
-		pacmound.DirectionNorth,
-		pacmound.DirectionEast,
-		pacmound.DirectionSouth,
-		pacmound.DirectionWest,
-	}
+	return pacmound.Directions()
 }
 
 func removeMinimumScoringDirections(scores []float64, directions []pacmound.Direction) ([]float64, []pacmound.Direction) {
