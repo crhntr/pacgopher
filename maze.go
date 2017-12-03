@@ -58,6 +58,15 @@ func (maze *Maze) setObsticle(x, y int) error {
 	return nil
 }
 
+func (maze *Maze) setReward(x, y int, reward float64) error {
+	if x < 0 || y < 0 || x >= len(*maze) || y >= len((*maze)[x]) {
+		return ErrBeyondTheKnownMaze
+	}
+	(*maze)[x][y].obsticle = false
+	(*maze)[x][y].reward = reward
+	return nil
+}
+
 // RewardAt may returns an error for out of range or obsticles
 func (maze Maze) RewardAt(x, y int) (float64, error) {
 	if x < 0 || y < 0 || x >= len(maze) || y >= len(maze[x]) {
