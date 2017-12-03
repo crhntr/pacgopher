@@ -27,7 +27,7 @@ func level04(gopher Agent, getPython AgentGetter, loop func(m *Maze, agentData *
 					pythonData, err := maze.setAgent(x, y, python)
 					must(err)
 					pythonData.t = -1
-					pythonData.score = 1000
+					pythonData.score = DeathCost
 					python.SetScopeGetter(newScopeGetter(maze, pythonData))
 					python.SetScoreGetter(pythonData.Score)
 				} else if rand.Intn(100) < 5 {

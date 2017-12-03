@@ -6,11 +6,6 @@ import (
 	"math/rand"
 )
 
-const (
-	ObsticleCollisionCost = -0.5
-	LivingCost            = 0
-)
-
 var (
 	ErrBeyondTheKnownMaze = errors.New(
 		"beyond the known maze")

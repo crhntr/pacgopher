@@ -1,5 +1,11 @@
 package pacmound
 
+const (
+	DeathCost             = 1000
+	ObsticleCollisionCost = -1
+	LivingCost            = 0.05
+)
+
 // AgentType represents how the game should handle an agent
 // negative agents are pythons
 // positive agents are gophers
