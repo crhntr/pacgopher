@@ -19,11 +19,11 @@ const (
 func NewGameMux(getGopher, getPython AgentGetter) http.Handler {
 	mux := http.NewServeMux()
 	serveFile(mux, "/", "../../src/index.html", "")
-	serveFile(mux, "/src/gopher.png", "../../src/gopher.png", "")
-	serveFile(mux, "/src/python.png", "../../src/python.png", "")
-	serveFile(mux, "/src/dirt.png", "../../src/dirt.png", "")
-	serveFile(mux, "/src/stone.png", "../../src/stone.png", "")
-	serveFile(mux, "/src/carrot.png", "../../src/carrot.png", "")
+	serveFile(mux, "/src/gopher.png", "../../src/assets/img/gopher.png", "")
+	serveFile(mux, "/src/python.png", "../../src/assets/img/python.png", "")
+	serveFile(mux, "/src/dirt.png", "../../src/assets/img/dirt.png", "")
+	serveFile(mux, "/src/stone.png", "../../src/assets/img/stone.png", "")
+	serveFile(mux, "/src/carrot.png", "../../src/assets/img/carrot.png", "")
 
 	mux.HandleFunc("/api/level/00", LevelHandler(level00, getGopher, getPython))
 	mux.HandleFunc("/api/level/01", LevelHandler(level01, getGopher, getPython))
