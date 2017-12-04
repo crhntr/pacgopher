@@ -1,7 +1,7 @@
 package pacmound
 
 const (
-	standardReward              = 10
+	standardReward              = 20
 	standardPythonStartingScore = 1000
 )
 

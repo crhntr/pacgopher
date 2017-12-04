@@ -97,7 +97,7 @@ func (agent *Agent) calulateCarrotWeight(x, y int) float64 {
 	_, _, dist := agent.scope.NearestMatching(func(b *pacmound.Block) bool {
 		return b != nil && b.Reward() > 0
 	}, 10)
-	return 1 / dist * dist
+	return 1 / dist
 }
 func (agent *Agent) calulatePythonWeight(x, y int) float64 {
 	reward := 0.0
@@ -123,7 +123,7 @@ func (agent *Agent) calulatePythonWeight(x, y int) float64 {
 	if reward < InitalQ {
 		reward = InitalQ
 	} else {
-		reward = 1 / (reward * reward)
+		reward = 1 / (reward * reward * reward)
 	}
 	// fmt.Println(1 / (reward * reward))
 	return reward

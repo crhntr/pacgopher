@@ -39,7 +39,7 @@ func main() {
 
 	for i := 0; i < loops; i++ {
 		//fmt.Printf("loop %d\n", i)
-		pacmound.Level01(getGopher, getPython)
+		pacmound.Level04(getGopher, getPython)
 	}
 	fmt.Println(agent)
 
