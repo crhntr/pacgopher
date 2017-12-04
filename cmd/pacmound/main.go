@@ -38,7 +38,7 @@ func main() {
 	}
 
 	for i := 0; i < loops; i++ {
-		log.Printf("\n\n\n\n\nLOOP %d\n\n\n\n\n", i)
+		fmt.Printf("loop %d\n", i)
 		pacmound.Level01(getGopher, getPython)
 	}
 	fmt.Println(agent)
