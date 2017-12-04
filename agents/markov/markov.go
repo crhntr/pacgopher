@@ -26,15 +26,11 @@ type Agent struct {
 	ObsticleWeight float64 `json:"obsticleWeight"`
 
 	scope  pacmound.ScopeGetter
-	reward pacmound.ScoreGetter
-
-	prevousAction pacmound.Direction
-
-	previousRewardTotal float64
+	reward pacmound.RewardGetter
 }
 
-func (agent *Agent) SetScoreGetter(f pacmound.ScoreGetter) { agent.reward = f }
-func (agent *Agent) SetScopeGetter(f pacmound.ScopeGetter) { agent.scope = f }
+func (agent *Agent) SetRewardGetter(f pacmound.RewardGetter) { agent.reward = f }
+func (agent *Agent) SetScopeGetter(f pacmound.ScopeGetter)   { agent.scope = f }
 
 func (agent *Agent) Damage(d pacmound.Damage) {
 	log.Printf("Markov Agent Took Damage %f %v", d, d.Error())
@@ -54,9 +50,7 @@ func (agent *Agent) Kill() {
 func (p *Agent) Win() {}
 
 func (agent *Agent) QLearning(α float64) pacmound.Direction {
-	totalReward := agent.reward()
-	r := totalReward - agent.previousRewardTotal
-	agent.previousRewardTotal = totalReward
+	r := agent.reward.LoopReward()
 
 	actions := agents.Actions()
 	d, maxScore := pacmound.DirectionNone, infSmall
@@ -97,7 +91,6 @@ func (agent *Agent) QLearning(α float64) pacmound.Direction {
 		agent.ObsticleWeight = agent.ObsticleWeight + α*(r-q)*ow
 	}
 
-	agent.prevousAction = d
 	return d
 }
 

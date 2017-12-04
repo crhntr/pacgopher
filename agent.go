@@ -19,19 +19,23 @@ type Agent interface {
 
 	CalculateIntent() Direction // player decision loop
 
-	SetScoreGetter(f ScoreGetter)
+	SetRewardGetter(f RewardGetter)
 	SetScopeGetter(f ScopeGetter)
 }
 
-type ScoreGetter func() float64
+type RewardGetter interface {
+	TotalReward() float64
+	LoopReward() float64
+}
 type ScopeGetter func(xOffset, yOffset int) *Block
 
 type AgentData struct {
-	a     Agent
-	score float64
-	x, y  int
-	t     AgentType
-	dead  bool
+	a Agent
+	score,
+	previousScore float64
+	x, y int
+	t    AgentType
+	dead bool
 }
 
 func (scope ScopeGetter) NearestMatching(match func(b *Block) bool, maxScan int) (minX, minY int, minDist float64) {
@@ -87,8 +91,12 @@ func (ad *AgentData) IsGopher() bool {
 	return ad.t > 0
 }
 
-func (ad *AgentData) Score() float64 {
+func (ad *AgentData) TotalReward() float64 {
 	return ad.score
+}
+
+func (ad *AgentData) LoopReward() float64 {
+	return ad.score - ad.previousScore
 }
 
 func newScopeGetter(maze Maze, ad *AgentData) ScopeGetter {

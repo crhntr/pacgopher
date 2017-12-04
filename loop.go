@@ -7,6 +7,7 @@ func (m *Maze) loop() bool {
 		for y := range (*m)[x] {
 			if agent := m.Occupant(x, y); agent != nil {
 				agentIntent := agent.a.CalculateIntent()
+				agent.previousScore = agent.score
 				xIntent, yIntent := move(m, agentIntent, agent.x, agent.y)
 
 				if agent.IsGopher() {

@@ -9,15 +9,15 @@ import (
 
 type Simple struct {
 	dead  bool
-	score pacmound.ScoreGetter
+	score pacmound.RewardGetter
 	scope pacmound.ScopeGetter
 
 	warning error
 }
 
-func (p *Simple) SetScoreGetter(f pacmound.ScoreGetter) { p.score = f }
-func (p *Simple) SetScopeGetter(f pacmound.ScopeGetter) { p.scope = f }
-func (p *Simple) Warning(err error)                     { p.warning = err }
+func (p *Simple) SetRewardGetter(f pacmound.RewardGetter) { p.score = f }
+func (p *Simple) SetScopeGetter(f pacmound.ScopeGetter)   { p.scope = f }
+func (p *Simple) Warning(err error)                       { p.warning = err }
 
 func (p *Simple) CalculateIntent() pacmound.Direction {
 	// time.Sleep(time.Second / 10)

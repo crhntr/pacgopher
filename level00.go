@@ -21,7 +21,7 @@ func level00(getGopher, getPython AgentGetter, loop func(m *Maze, agentData *Age
 	must(err)
 	agentData.t = 1
 	player.SetScopeGetter(newScopeGetter(maze, agentData))
-	player.SetScoreGetter(agentData.Score)
+	player.SetRewardGetter(agentData)
 
 	for loop(&maze, agentData) {
 	}

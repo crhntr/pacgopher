@@ -8,9 +8,9 @@ import (
 
 type Random struct{}
 
-func (p *Random) SetScoreGetter(f pacmound.ScoreGetter) {}
-func (p *Random) SetScopeGetter(f pacmound.ScopeGetter) {}
-func (p *Random) Damage(d pacmound.Damage)              {}
+func (p *Random) SetRewardGetter(f pacmound.RewardGetter) {}
+func (p *Random) SetScopeGetter(f pacmound.ScopeGetter)   {}
+func (p *Random) Damage(d pacmound.Damage)                {}
 func (p *Random) CalculateIntent() pacmound.Direction {
 	return pacmound.Direction(rand.Intn(4) + 1)
 }
