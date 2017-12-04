@@ -14,7 +14,7 @@ func (b Block) IsOccupiedWithPython() bool { return b.agent != nil && b.agent.t 
 
 func (b Block) Reward() float64 {
 	if b.IsObstructed() {
-		return float64(DamageColision)
+		return -float64(DamageColision)
 	}
 	return b.reward
 }
