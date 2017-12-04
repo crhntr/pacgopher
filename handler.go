@@ -46,9 +46,14 @@ func LevelHandler(levelFunc LevelFunc, getGopher, getPython AgentGetter) http.Ha
 
 		data := LevelData{}
 		data.MaxSteps = MaxLoops
+		var agent Agent
 		levelFunc(getGopher, getPython, func(m *Maze, agentData *AgentData) bool {
 			data.States = append(data.States, m.encodable())
 			data.Scores = append(data.Scores, agentData.score)
+
+			if agent == nil {
+				agent = agentData.a
+			}
 
 			remReward := m.RemainingReward()
 
@@ -60,7 +65,7 @@ func LevelHandler(levelFunc LevelFunc, getGopher, getPython AgentGetter) http.Ha
 			return true
 		})
 
-		// data.Agent = getGopher()
+		data.Agent = agent
 		if err := json.NewEncoder(w).Encode(data); err != nil {
 			log.Print(data)
 			log.Print(err)

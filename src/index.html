@@ -13,6 +13,7 @@
           <tr>
             <tr><td>Step</td><td>{{step}}</td></tr>
             <tr><td>Score</td><td>{{scores[step]}}</td></tr>
+            <tr v-for="(val, key) in agent"><td>agent.{{key}}</td><td>{{val}}</td></tr>
             <td colspan="2">
               <button @click="endGame()">Clear</button>
               <button @click="step > 0 ? step-- : step">Previous</button>
@@ -56,7 +57,8 @@ var app = new Vue({
       states: [],
       step: 0,
       scores: [],
-      stepper: null
+      stepper: null,
+      agent: {}
     }
   },
   methods: {
@@ -70,6 +72,7 @@ var app = new Vue({
             console.log(data)
             that.scores = data.scores
             that.states = data.states
+            that.agent = data.agent
             that.step = 0
           }
         }

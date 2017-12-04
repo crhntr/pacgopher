@@ -32,6 +32,9 @@ func (m *Maze) loop() bool {
 						agent.Damage(DamageColision)
 					}
 					agent.Damage(DamageAgeing)
+					if agent.isDead() {
+						return false
+					}
 				}
 			}
 		}

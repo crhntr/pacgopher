@@ -38,6 +38,10 @@ type AgentData struct {
 	dead bool
 }
 
+func (ad *AgentData) isDead() bool {
+	return ad.dead || ad.score < 0
+}
+
 func (scope ScopeGetter) NearestMatching(match func(b *Block) bool, maxScan int) (minX, minY int, minDist float64) {
 	minX, minY = math.MaxInt32/2, math.MaxInt32/2
 	minDist = float64(minX * minY)
