@@ -7,6 +7,7 @@
 <body>
   <div id="app">
     <div v-if="states.length > 0">
+
       <div>
         <table class="control">
           <tr>
@@ -30,6 +31,7 @@
         </div>
       </div>
     </div>
+
     <div v-else>
       <table class="control">
         <tr>
@@ -41,13 +43,9 @@
             <button @click="createGame('04')">Level 04</button>
           </td>
         </tr>
-        <!-- <tr>
-          <td>
-            <button @click="training = !training">{{training ? "Stop Trainng": "Start Trainng"}}</button>
-          </td>
-        </tr> -->
       </table>
     </div>
+
   </div>
 </body>
 <script>
@@ -58,7 +56,6 @@ var app = new Vue({
       states: [],
       step: 0,
       scores: [],
-      training: false,
       stepper: null
     }
   },
@@ -81,9 +78,7 @@ var app = new Vue({
       req.send();
     },
     endGame: function () {
-      if (this.stepper !== null) {
-        this.stopPlaying()
-      }
+      if (this.stepper !== null) { this.stopPlaying() }
       this.states = []
       this.step = 0
       this.scores = []
@@ -104,16 +99,19 @@ var app = new Vue({
 })
 </script>
 <style>
-body {margin: 0;}
+
+body, #app { margin: 0; }
+
 html {
   background-image: url("/src/dirt.png");
   background-repeat: repeat;
   margin: 0;
 }
-#app{
-  margin: 0;
-}
-#maze {}
+
+
+/* Maze  */
+
+/*#maze {}*/
 .tile {
   width: 40px;
   height: 40px;
@@ -122,24 +120,19 @@ html {
   border: none;
   float: left;
 }
-.obsticle {
-  content: url("/src/stone.png");
-}
 .row {
   margin: 0;
   padding: 0;
   height: 40px;
   border: none;
 }
-.python {
-  content: url("/src/python.png");
-}
-.gopher {
-  content: url("/src/gopher.png");
-}
-.reward {
-  content: url("/src/carrot.png");
-}
+.python { content: url("/src/python.png"); }
+.gopher { content: url("/src/gopher.png"); }
+.reward { content: url("/src/carrot.png"); }
+.obsticle { content: url("/src/stone.png"); }
+
+
+/* BUTTONS (those on the bottom UI) */
 button {
   background: #1C1008;
   border: none;
@@ -150,15 +143,12 @@ button {
   height: 40px;
   border-radius: 4px
 }
-button:hover {
-  box-shadow: 4px 4px 4px #26150B;
-}
-button:active {
-  box-shadow: inset 4px 4px 4px #000;
-}
-table.control, table.control th {
-   border: 2px solid #26150B;
-}
+button:hover { box-shadow: 4px 4px 4px #26150B; }
+button:active { box-shadow: inset 4px 4px 4px #000; }
+
+
+/* CONTROL TABLE (bottom UI) */
+table.control, table.control th { border: 2px solid #26150B; }
 table.control {
   position: fixed;
   bottom: 10px;
@@ -173,5 +163,7 @@ table.control td {
   padding: 5px;
   border: 2px dotted #26150B;
 }
+
+
 </style>
 </html>
