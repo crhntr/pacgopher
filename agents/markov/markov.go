@@ -1,7 +1,6 @@
 package markov
 
 import (
-	"fmt"
 	"log"
 	"math"
 	"math/rand"
@@ -26,7 +25,7 @@ type Agent struct {
 	PythonWeight   float64 `json:"pythonWeight"`
 	ObsticleWeight float64 `json:"obsticleWeight"`
 
-	check  pacmound.ScopeGetter
+	scope  pacmound.ScopeGetter
 	reward pacmound.ScoreGetter
 
 	prevousAction pacmound.Direction
@@ -35,7 +34,7 @@ type Agent struct {
 }
 
 func (agent *Agent) SetScoreGetter(f pacmound.ScoreGetter) { agent.reward = f }
-func (agent *Agent) SetScopeGetter(f pacmound.ScopeGetter) { agent.check = f }
+func (agent *Agent) SetScopeGetter(f pacmound.ScopeGetter) { agent.scope = f }
 
 func (agent *Agent) Damage(d pacmound.Damage) {
 	log.Printf("Markov Agent Took Damage %f %v", d, d.Error())
@@ -49,7 +48,7 @@ func (agent *Agent) CalculateIntent() pacmound.Direction {
 	return agent.QLearning(agent.LearningRate)
 }
 func (agent *Agent) Kill() {
-	fmt.Printf("KILLED (score: %f)\n", agent.reward())
+	// fmt.Printf("KILLED (score: %f)\n", agent.reward())
 	agent.QLearning(agent.LearningRate)
 }
 func (p *Agent) Win() {}
@@ -63,7 +62,7 @@ func (agent *Agent) QLearning(α float64) pacmound.Direction {
 	d, maxScore := pacmound.DirectionNone, infSmall
 	for _, action := range actions {
 		xt, yty := action.Transform()
-		block := agent.check(xt, yty)
+		block := agent.scope(xt, yty)
 		var reward float64
 		if block == nil {
 			continue
@@ -89,8 +88,8 @@ func (agent *Agent) QLearning(α float64) pacmound.Direction {
 	q += agent.PythonWeight * pw
 	q += agent.ObsticleWeight * ow
 
-	fmt.Printf("CW: %f, PW: %f, OW: %f, cw: %f, pw: %f, ow: %f, q: %f, r: %f\n",
-		agent.CarrotWeight, agent.PythonWeight, agent.ObsticleWeight, cw, pw, ow, q, r)
+	// fmt.Printf("CW: %f, PW: %f, OW: %f, cw: %f, pw: %f, ow: %f, q: %f, r: %f\n",
+	// agent.CarrotWeight, agent.PythonWeight, agent.ObsticleWeight, cw, pw, ow, q, r)
 
 	if !math.IsNaN(cw) && !math.IsNaN(pw) && !math.IsNaN(ow) {
 		agent.CarrotWeight = agent.CarrotWeight + α*(r-q)*cw
@@ -103,24 +102,10 @@ func (agent *Agent) QLearning(α float64) pacmound.Direction {
 }
 
 func (agent *Agent) calulateCarrotWeight(x, y int) float64 {
-	reward := 0.0
-	dist := 5
-	for xt := -dist; xt <= dist; xt++ {
-		for yt := -dist; yt <= dist; yt++ {
-			b := agent.check(xt, yt)
-			if b != nil {
-				if r := b.Reward(); r > 0 {
-					if n := math.Sqrt(float64((x-xt)*(x-xt) + (y-yt)*(y-yt))); n > 0.5 {
-						reward += (1 / n) * r
-					}
-				}
-			}
-		}
-	}
-	if reward < InitalQ {
-		return InitalQ
-	}
-	return 1 / (reward * reward)
+	_, _, dist := agent.scope.NearestMatching(func(b *pacmound.Block) bool {
+		return b != nil && b.Reward() > 0
+	}, 10)
+	return 1 / dist * dist
 }
 func (agent *Agent) calulatePythonWeight(x, y int) float64 {
 	reward := 0.0
@@ -128,26 +113,28 @@ func (agent *Agent) calulatePythonWeight(x, y int) float64 {
 	for xt := -dist; xt <= dist; xt++ {
 		for yt := -dist; yt <= dist; yt++ {
 			if !(yt == y && xt == x) {
-				b := agent.check(xt, yt)
+				b := agent.scope(xt, yt)
 				if b != nil && b.IsOccupiedWithPython() && !(yt == y && xt == x) {
-					fmt.Print("*")
-					if n := math.Sqrt(float64((x-xt)*(x-xt) + (y-yt)*(y-yt))); n > 0.5 {
-						reward += n
+					// fmt.Print("*")
+					if d := distance(x, y, xt, yt); d > 0 {
+						reward += d
 					}
 				} else {
-					fmt.Print("-")
+					// fmt.Print("-")
 				}
 			} else {
-				fmt.Print("@")
+				// fmt.Print("@")
 			}
 		}
-		fmt.Println()
+		// fmt.Println()
 	}
-	fmt.Println(1 / (reward * reward))
 	if reward < InitalQ {
-		return InitalQ
+		reward = InitalQ
+	} else {
+		reward = 1 / (reward * reward)
 	}
-	return -1 / (reward * reward)
+	// fmt.Println(1 / (reward * reward))
+	return reward
 }
 func (agent *Agent) calulateObsticleWeight(x, y int) float64 {
 	reward := 0.0
@@ -155,16 +142,19 @@ func (agent *Agent) calulateObsticleWeight(x, y int) float64 {
 	for _, action := range actions[1:] {
 		dist := 1
 		xt, yt := action.Transform()
-		b := agent.check(x+xt, y+yt)
+		b := agent.scope(x+xt, y+yt)
 		if b == nil || b.IsObstructed() || dist > 5 {
 			reward += 1
 			break
 		}
 	}
 	if reward < InitalQ {
-		return InitalQ
+		reward = InitalQ
+	} else {
+		reward = 1 / (reward * reward)
 	}
-	return 1 / (reward * reward)
+	// fmt.Println(1 / (reward * reward))
+	return reward
 }
 
 func maxReward(rewards ...float64) float64 {
@@ -185,4 +175,8 @@ func maxDirection(rewards []float64, actions []pacmound.Direction) pacmound.Dire
 		}
 	}
 	return actions[maxDir]
+}
+
+func distance(xFinal, yFinal, xInital, yInital int) float64 {
+	return math.Sqrt(float64((xInital-xFinal)*(xInital-xFinal) + (yInital-yFinal)*(yInital-yFinal)))
 }
