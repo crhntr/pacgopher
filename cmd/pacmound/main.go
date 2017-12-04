@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/crhntr/pacmound"
 	"github.com/crhntr/pacmound/agents"
@@ -16,12 +18,18 @@ func getPython() pacmound.Agent {
 }
 
 func main() {
-	var loops int
+	var (
+		loops int
+		serve bool
+	)
 	flag.IntVar(&loops, "loops", 1, "")
+	flag.BoolVar(&serve, "serve", false, "")
 	flag.Parse()
 
+	rand.Seed(time.Now().Unix())
+
 	agent := &markov.Agent{
-		LearningRate: 0.07,
+		LearningRate: 0.1,
 	}
 	fmt.Println(agent)
 
@@ -35,6 +43,8 @@ func main() {
 	}
 	fmt.Println(agent)
 
-	mux := pacmound.NewGameMux(getGopher, getPython)
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	if serve {
+		mux := pacmound.NewGameMux(getGopher, getPython)
+		log.Fatal(http.ListenAndServe(":8080", mux))
+	}
 }
