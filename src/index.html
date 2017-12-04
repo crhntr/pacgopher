@@ -11,7 +11,7 @@
       <div>
         <table class="control">
           <tr>
-            <tr><td>Step</td><td>{{step}}</td></tr>
+            <tr><td>Step</td><td>{{step}} of {{scores.length}}</td></tr>
             <tr><td>Score</td><td>{{scores[step]}}</td></tr>
             <tr v-for="(val, key) in agent"><td>agent.{{key}}</td><td>{{val}}</td></tr>
             <td colspan="2">
