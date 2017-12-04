@@ -3,6 +3,7 @@ package pacmound
 import (
 	"encoding/json"
 	"errors"
+	"math"
 	"math/rand"
 )
 
@@ -119,4 +120,8 @@ func (maze *Maze) RandomEmptyPosition() (x, y int) {
 		}
 		attempts++
 	}
+}
+
+func distance(xFinal, yFinal, xInital, yInital int) float64 {
+	return math.Sqrt(float64((xInital-xFinal)*(xInital-xFinal) + (yInital-yFinal)*(yInital-yFinal)))
 }
