@@ -5,9 +5,9 @@ import "fmt"
 type Damage float64
 
 const (
-	DamageAgeing    Damage = 0.05
+	DamageAgeing    Damage = 0.5
 	DamageLostFight Damage = 500.0
-	DamageColision  Damage = 0.1
+	DamageColision  Damage = 5
 )
 
 func (d Damage) Error() string {

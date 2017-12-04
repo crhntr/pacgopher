@@ -34,7 +34,7 @@ func level04(getGopher, getPython AgentGetter, loop func(m *Maze, agentData *Age
 				} else if rand.Intn(100) < 5 {
 					maze.setObsticle(x, y)
 				} else if rand.Intn(100) > 100-30 {
-					maze.setReward(x, y, float64(int64(rand.Float64()*10*100))/100)
+					maze.setReward(x, y, float64(int64(rand.Float64()*standardReward*100))/100)
 				}
 			}
 		}
