@@ -22,7 +22,7 @@ func main() {
 		loops int
 		serve bool
 	)
-	flag.IntVar(&loops, "loops", 1, "")
+	flag.IntVar(&loops, "loops", 0, "")
 	flag.BoolVar(&serve, "serve", false, "")
 	flag.Parse()
 
