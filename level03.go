@@ -45,12 +45,12 @@ func level03(getGopher, getPython AgentGetter, loop func(m *Maze, agentData *Age
 	maze.setObsticle(2, 6)
 	maze.setObsticle(3, 4)
 
-	maze.setObsticle(4, 6)
-	// maze.setObsticle(4, 5)
-	maze.setObsticle(4, 4)
-	maze.setObsticle(4, 3)
-	maze.setObsticle(4, 2)
-	maze.setObsticle(4, 1)
+	// maze.setObsticle(4, 6)
+	// // maze.setObsticle(4, 5)
+	// maze.setObsticle(4, 4)
+	// maze.setObsticle(4, 3)
+	// maze.setObsticle(4, 2)
+	// maze.setObsticle(4, 1)
 
 	maze.setObsticle(9, 2)
 	maze.setObsticle(9, 3)
