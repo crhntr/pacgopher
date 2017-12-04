@@ -29,7 +29,7 @@ func main() {
 	rand.Seed(time.Now().Unix())
 
 	agent := &markov.Agent{
-		LearningRate: 0.1,
+		LearningRate: 0.05,
 	}
 	fmt.Println(agent)
 
@@ -38,7 +38,7 @@ func main() {
 	}
 
 	for i := 0; i < loops; i++ {
-		fmt.Printf("loop %d\n", i)
+		//fmt.Printf("loop %d\n", i)
 		pacmound.Level01(getGopher, getPython)
 	}
 	fmt.Println(agent)
