@@ -2,10 +2,8 @@ package pacmound
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 )
 
 var (
@@ -48,17 +46,13 @@ func LevelHandler(levelFunc LevelFunc, getGopher, getPython AgentGetter) http.Ha
 
 		data := LevelData{}
 		data.MaxSteps = MaxLoops
-		userOut := json.NewEncoder(os.Stdout)
 		levelFunc(getGopher, getPython, func(m *Maze, agentData *AgentData) bool {
-			defer userOut.Encode(agentData.a)
-			fmt.Printf("%3d] ", loopCount)
-
 			data.States = append(data.States, m.encodable())
 			data.Scores = append(data.Scores, agentData.score)
 
 			remReward := m.RemainingReward()
 
-			if !m.loop() || remReward <= 0 || agentData.dead {
+			if !m.loop() || remReward <= 0 {
 				data.Scores = append(data.Scores, agentData.score)
 				return false
 			}

@@ -1,7 +1,6 @@
 package markov
 
 import (
-	"log"
 	"math"
 	"math/rand"
 
@@ -33,7 +32,7 @@ func (agent *Agent) SetRewardGetter(f pacmound.RewardGetter) { agent.reward = f 
 func (agent *Agent) SetScopeGetter(f pacmound.ScopeGetter)   { agent.scope = f }
 
 func (agent *Agent) Damage(d pacmound.Damage) {
-	log.Printf("Markov Agent Took Damage %f %v", d, d.Error())
+	// log.Printf("Markov Agent Took Damage %f %v", d, d.Error())
 }
 
 func (agent *Agent) CalculateIntent() pacmound.Direction {

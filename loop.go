@@ -1,7 +1,5 @@
 package pacmound
 
-import "fmt"
-
 func (m *Maze) loop() bool {
 	for x := range *m {
 		for y := range (*m)[x] {
@@ -10,9 +8,9 @@ func (m *Maze) loop() bool {
 				agent.previousScore = agent.score
 				xIntent, yIntent := move(m, agentIntent, agent.x, agent.y)
 
-				if agent.IsGopher() {
-					fmt.Printf("(x: %d, y: %d) %s (x: %d, y: %d)\n\n\n", agent.x, agent.y, agentIntent, xIntent, yIntent)
-				}
+				// if agent.IsGopher() {
+				// 	fmt.Printf("(x: %d, y: %d) %s (x: %d, y: %d)\n\n\n", agent.x, agent.y, agentIntent, xIntent, yIntent)
+				// }
 
 				defer func(x, y int) {
 					if !(*m)[xIntent][yIntent].IsObstructed() && !(*m)[xIntent][yIntent].IsOccupied() {
