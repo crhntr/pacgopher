@@ -1,5 +1,10 @@
 package pacmound
 
+import (
+	"fmt"
+	"math"
+)
+
 // AgentType represents how the game should handle an agent
 // negative agents are pythons
 // positive agents are gophers
@@ -27,6 +32,51 @@ type AgentData struct {
 	x, y  int
 	t     AgentType
 	dead  bool
+}
+
+func (scope ScopeGetter) NearestMatching(match func(b *Block) bool, maxScan int) (minX, minY int, minDist float64) {
+	minX, minY = math.MaxInt32/2, math.MaxInt32/2
+	minDist = float64(minX * minY)
+	check := func(xOffset, yOffset int) {
+		if block := scope(xOffset, yOffset); match(block) {
+			if dist := distance(0, 0, xOffset, yOffset); dist < minDist {
+				minX, minY, minDist = xOffset, yOffset, dist
+			}
+		}
+	}
+	for dist := 1; dist <= maxScan; dist++ {
+		for i := -dist; i < dist; i++ {
+			check(i, -dist)
+			check(-dist, i)
+			check(i, dist)
+			check(dist, i)
+		}
+	}
+	return
+}
+
+func (scope ScopeGetter) DisplayRegion(dist int) {
+	fmt.Println()
+	for x := -dist; x <= dist; x++ {
+		for y := -dist; y <= dist; y++ {
+			b := scope(x, y)
+			if b == nil {
+				fmt.Print("    ")
+			} else if x == 0 && y == 0 {
+				fmt.Print("[@@]")
+			} else if b.IsOccupied() {
+				fmt.Print("[PY]")
+			} else if b.IsObstructed() {
+				fmt.Print("[##]")
+			} else if r := b.Reward(); r > 0 {
+				fmt.Printf("[$$]")
+			} else {
+				fmt.Printf("[--]")
+			}
+		}
+		fmt.Println()
+	}
+	fmt.Println()
 }
 
 func (ad *AgentData) IsPython() bool {
