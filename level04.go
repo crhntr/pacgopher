@@ -31,7 +31,7 @@ func level04(getGopher, getPython AgentGetter, loop func(m *Maze, agentData *Age
 					pythonData.score = standardPythonStartingScore
 					python.SetScopeGetter(newScopeGetter(maze, pythonData))
 					python.SetRewardGetter(pythonData)
-				} else if rand.Intn(100) < 5 {
+				} else if rand.Intn(100) < 13 {
 					maze.setObsticle(x, y)
 				} else if rand.Intn(100) > 100-60 {
 					maze.setReward(x, y, float64(int64(rand.Float64()*standardReward*100))/100)
@@ -46,6 +46,7 @@ func level04(getGopher, getPython AgentGetter, loop func(m *Maze, agentData *Age
 	maze[4][3].obsticle, maze[4][3].reward = false, 5
 	gopher := getGopher()
 	gopherData, err := maze.setAgent(2, 2, gopher)
+	gopherData.score = 10
 	must(err)
 	gopherData.t = 1
 	gopher.SetScopeGetter(newScopeGetter(maze, gopherData))

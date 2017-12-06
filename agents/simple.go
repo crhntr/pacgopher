@@ -1,7 +1,6 @@
 package agents
 
 import (
-	"log"
 	"math/rand"
 
 	"github.com/crhntr/pacmound"
@@ -49,4 +48,4 @@ func (p *Simple) CalculateIntent() pacmound.Direction {
 }
 
 func (p *Simple) Kill()                    { p.dead = true }
-func (p *Simple) Damage(d pacmound.Damage) { log.Printf("Simple took damage: %s", d) }
+func (p *Simple) Damage(d pacmound.Damage) { /*log.Printf("Simple took damage: %s", d)*/ }

@@ -7,7 +7,7 @@ type Damage float64
 const (
 	DamageAgeing    Damage = 0.5
 	DamageLostFight Damage = 500.0
-	DamageColision  Damage = 3
+	DamageColision  Damage = 30
 
 	DeathPenatlty = 20
 )

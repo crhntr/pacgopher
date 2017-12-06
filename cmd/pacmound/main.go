@@ -29,8 +29,9 @@ func main() {
 	rand.Seed(time.Now().Unix())
 
 	agent := &markov.Agent{
-		LearningRate: 0.05,
+		LearningRate: 0.01,
 	}
+	// agent := &agents.Random{}
 	fmt.Println(agent)
 
 	getGopher := func() pacmound.Agent {

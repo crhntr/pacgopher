@@ -6,6 +6,7 @@ import (
 
 	"github.com/crhntr/pacmound"
 	"github.com/crhntr/pacmound/agents"
+	"gonum.org/v1/gonum/stat"
 )
 
 const (
@@ -53,23 +54,24 @@ func (agent *Agent) QLearning(α float64) pacmound.Direction {
 
 	actions := agents.Actions()
 	d, maxScore := pacmound.DirectionNone, infSmall
-	for _, action := range actions {
+	rewards := [4]float64{}
+	for i, action := range actions {
 		xt, yty := action.Transform()
 		block := agent.scope(xt, yty)
-		var reward float64
 		if block == nil {
 			continue
 		}
-		reward = agent.CarrotWeight * agent.calulateCarrotWeight(xt, yty)
-		reward += agent.PythonWeight * agent.calulatePythonWeight(xt, yty)
-		reward += agent.ObsticleWeight * agent.calulateObsticleWeight(xt, yty)
-
-		if reward > maxScore {
-			maxScore = reward
+		rewards[i] = agent.CarrotWeight * agent.calulateCarrotWeight(xt, yty)
+		rewards[i] += agent.PythonWeight * agent.calulatePythonWeight(xt, yty)
+		rewards[i] += agent.ObsticleWeight * agent.calulateObsticleWeight(xt, yty)
+		//fmt.Printf("%s (%f)\t", action, rewards[i])
+		if rewards[i] > maxScore {
+			maxScore = rewards[i]
 			d = action
 		}
 	}
-	if maxScore <= infSmall {
+
+	if dev := stat.StdDev(rewards[:], nil); maxScore <= infSmall || dev < 0.01 {
 		d = pacmound.Direction(rand.Intn(4) + 1)
 	}
 
@@ -89,6 +91,7 @@ func (agent *Agent) QLearning(α float64) pacmound.Direction {
 		agent.PythonWeight = agent.PythonWeight + α*(r-q)*pw
 		agent.ObsticleWeight = agent.ObsticleWeight + α*(r-q)*ow
 	}
+	//fmt.Println(d)
 
 	return d
 }
@@ -96,57 +99,20 @@ func (agent *Agent) QLearning(α float64) pacmound.Direction {
 func (agent *Agent) calulateCarrotWeight(x, y int) float64 {
 	_, _, dist := agent.scope.NearestMatching(func(b *pacmound.Block) bool {
 		return b != nil && b.Reward() > 0
-	}, 10)
-	return 1 / dist
+	}, 6)
+	return 1 / (dist * dist)
 }
 func (agent *Agent) calulatePythonWeight(x, y int) float64 {
-	reward := 0.0
-	dist := 2
-	for xt := -dist; xt <= dist; xt++ {
-		for yt := -dist; yt <= dist; yt++ {
-			if !(yt == y && xt == x) {
-				b := agent.scope(xt, yt)
-				if b != nil && b.IsOccupiedWithPython() && !(yt == y && xt == x) {
-					// fmt.Print("*")
-					if d := distance(x, y, xt, yt); d > 0 {
-						reward += d
-					}
-				} else {
-					// fmt.Print("-")
-				}
-			} else {
-				// fmt.Print("@")
-			}
-		}
-		// fmt.Println()
-	}
-	if reward < InitalQ {
-		reward = InitalQ
-	} else {
-		reward = 1 / (reward * reward * reward)
-	}
-	// fmt.Println(1 / (reward * reward))
-	return reward
+	_, _, dist := agent.scope.NearestMatching(func(b *pacmound.Block) bool {
+		return b != nil && b.IsOccupiedWithPython()
+	}, 5)
+	return 1 / (dist * dist)
 }
 func (agent *Agent) calulateObsticleWeight(x, y int) float64 {
-	reward := 0.0
-	actions := agents.Actions()
-	for _, action := range actions[1:] {
-		dist := 1
-		xt, yt := action.Transform()
-		b := agent.scope(x+xt, y+yt)
-		if b == nil || b.IsObstructed() || dist > 5 {
-			reward += 1
-			break
-		}
-	}
-	if reward < InitalQ {
-		reward = InitalQ
-	} else {
-		reward = 1 / (reward * reward)
-	}
-	// fmt.Println(1 / (reward * reward))
-	return reward
+	dist := agent.scope.AverageMatching(func(b *pacmound.Block) bool {
+		return b != nil && b.IsObstructed()
+	}, 4)
+	return 1 / (dist * dist)
 }
 
 func maxReward(rewards ...float64) float64 {

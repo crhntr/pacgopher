@@ -63,6 +63,25 @@ func (scope ScopeGetter) NearestMatching(match func(b *Block) bool, maxScan int)
 	return
 }
 
+func (scope ScopeGetter) AverageMatching(match func(b *Block) bool, maxScan int) (average float64) {
+	count, sum := 0.0, 0.0
+	check := func(xOffset, yOffset int) {
+		if block := scope(xOffset, yOffset); match(block) {
+			sum += distance(0, 0, xOffset, yOffset)
+			count++
+		}
+	}
+	for dist := 1; dist <= maxScan; dist++ {
+		for i := -dist; i < dist; i++ {
+			check(i, -dist)
+			check(-dist, i)
+			check(i, dist)
+			check(dist, i)
+		}
+	}
+	return sum / count
+}
+
 func (scope ScopeGetter) DisplayRegion(dist int) {
 	fmt.Println()
 	for x := -dist; x <= dist; x++ {
