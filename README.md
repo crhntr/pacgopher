@@ -60,3 +60,8 @@ func (agent *Agent) QLearning(α float64) pacmound.Direction {
 	return d
 }
 ```
+This code loosely was based on:
+- http://faculty.csuci.edu/David.Claveau/COMP469F17/pacman.txt
+- http://faculty.csuci.edu/David.Claveau/COMP469F17/GridMDP_PM.txt
+- http://faculty.csuci.edu/David.Claveau/COMP469F17/MDP4.txt
+- http://faculty.csuci.edu/David.Claveau/COMP469F17/GridMDP4.txt
