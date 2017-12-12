@@ -55,15 +55,16 @@ func (agent *Agent) QLearning(α float64) pacmound.Direction {
 	actions := agents.Actions()
 	d, maxScore := pacmound.DirectionNone, infSmall
 	rewards := [4]float64{}
+
 	for i, action := range actions {
-		xt, yty := action.Transform()
-		block := agent.scope(xt, yty)
+		xt, yt := action.Transform()
+		block := agent.scope(xt, yt)
 		if block == nil {
 			continue
 		}
-		rewards[i] = agent.CarrotWeight * agent.calulateCarrotWeight(xt, yty)
-		rewards[i] += agent.PythonWeight * agent.calulatePythonWeight(xt, yty)
-		rewards[i] += agent.ObsticleWeight * agent.calulateObsticleWeight(xt, yty)
+		rewards[i] = agent.CarrotWeight * agent.calulateCarrotWeight(xt, yt)
+		rewards[i] += agent.PythonWeight * agent.calulatePythonWeight(xt, yt)
+		rewards[i] += agent.ObsticleWeight * agent.calulateObsticleWeight(xt, yt)
 		//fmt.Printf("%s (%f)\t", action, rewards[i])
 		if rewards[i] > maxScore {
 			maxScore = rewards[i]
