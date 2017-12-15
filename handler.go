@@ -2,8 +2,10 @@ package pacmound
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 )
 
 var (
@@ -15,6 +17,7 @@ const (
 )
 
 func NewGameMux(getGopher, getPython AgentGetter) http.Handler {
+	checkFiles()
 	mux := http.NewServeMux()
 	serveFile(mux, "/", "../../src/index.html", "")
 	serveFile(mux, "/src/gopher.png", "../../src/assets/img/gopher.png", "")
@@ -29,6 +32,26 @@ func NewGameMux(getGopher, getPython AgentGetter) http.Handler {
 	mux.HandleFunc("/api/level/03", LevelHandler(level03, getGopher, getPython))
 	mux.HandleFunc("/api/level/04", LevelHandler(level04, getGopher, getPython))
 	return mux
+}
+
+func checkFiles() {
+	paths := []string{
+		"../../src/assets/img/gopher.png",
+		"../../src/assets/img/python.png",
+		"../../src/assets/img/dirt.png",
+		"../../src/assets/img/stone.png",
+		"../../src/assets/img/carrot.png"}
+
+	pathNotFound := false
+	for _, path := range paths {
+		if _, err := os.Stat(path); err != nil {
+			pathNotFound = true
+			fmt.Fprintf(os.Stderr, err.Error())
+		}
+	}
+	if pathNotFound {
+		panic("some path not found")
+	}
 }
 
 type LevelData struct {
