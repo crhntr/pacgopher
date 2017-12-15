@@ -46,6 +46,7 @@ func main() {
 
 	if serve {
 		mux := pacmound.NewGameMux(getGopher, getPython)
+		log.Println("serving on https://localhost:8080")
 		log.Fatal(http.ListenAndServe(":8080", mux))
 	}
 }
